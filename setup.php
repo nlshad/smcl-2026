@@ -80,9 +80,18 @@ try {
     ) ENGINE=InnoDB;");
     $message[] = "🟢 Table 'bids' created.";
 
-    // Create Index on bids table for fast querying
-    $pdo->exec("CREATE INDEX idx_player_bid ON bids(player_id, bid_amount DESC);");
-    $message[] = "🟢 Index 'idx_player_bid' created on 'bids' table.";
+    // Create Index on bids table for fast querying (Wrapped in a try-catch for safe page-reloads!)
+    try {
+        $pdo->exec("CREATE INDEX idx_player_bid ON bids(player_id, bid_amount DESC);");
+        $message[] = "🟢 Index 'idx_player_bid' created on 'bids' table.";
+    } catch (PDOException $e) {
+        // If it's a duplicate index error (1061), we can safely ignore it and continue!
+        if (str_contains($e->getMessage(), '1061')) {
+            $message[] = "🟢 Index 'idx_player_bid' already verified.";
+        } else {
+            throw $e;
+        }
+    }
 
     // Auction State Table
     $pdo->exec("CREATE TABLE IF NOT EXISTS auction_state (
