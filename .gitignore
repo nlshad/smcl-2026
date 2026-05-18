@@ -11,3 +11,7 @@ Desktop.ini
 .vscode/
 *.log
 *.tmp
+
+# Exclude secret Hostinger production database configuration file
+config/db_prod.php
+

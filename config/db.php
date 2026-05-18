@@ -14,13 +14,19 @@ if ($isLocal) {
     $user = 'root';
     $pass = '';
 } else {
-    // HOSTINGER PRODUCTION CREDENTIALS
-    // Replace these values with the database details you create in your Hostinger hPanel!
-    $host = 'localhost'; 
-    $db   = 'u123456789_smcl_db'; 
-    $user = 'u123456789_smcl_user'; 
-    $pass = 'your_hostinger_database_password'; 
+    // HOSTINGER PRODUCTION (Loads from an untracked file for GitHub security!)
+    $prodFile = __DIR__ . '/db_prod.php';
+    if (file_exists($prodFile)) {
+        require_once $prodFile;
+    } else {
+        // Fallback placeholders in case the file isn't created yet
+        $host = 'localhost'; 
+        $db   = 'your_hostinger_db'; 
+        $user = 'your_hostinger_user'; 
+        $pass = 'your_hostinger_password'; 
+    }
 }
+
 
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
