@@ -17,11 +17,11 @@ try {
     $message[] = "🟢 Connected to MySQL server successfully.";
 
     // 2. Create database
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS smcl_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-    $message[] = "🟢 Database 'smcl_db' created or verified.";
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS `$db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+    $message[] = "🟢 Database '$db' created or verified.";
 
     // 3. Connect to database
-    $pdo->exec("USE smcl_db;");
+    $pdo->exec("USE `$db`;");
 
     // 4. Create Tables
     
