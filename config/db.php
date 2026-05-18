@@ -24,18 +24,36 @@ if ($isLocal) {
     $prodFileInRoot = dirname(__DIR__) . '/db_prod.php';
     $prodFileAboveRoot = dirname(dirname(__DIR__)) . '/db_prod.php';
 
+    // Self-healing scanner: Check all three paths and load the first one that is actually populated!
+    $loaded = false;
+
     if (file_exists($prodFileInConfig)) {
-        require_once $prodFileInConfig;
-    } elseif (file_exists($prodFileInRoot)) {
-        require_once $prodFileInRoot;
-    } elseif (file_exists($prodFileAboveRoot)) {
-        require_once $prodFileAboveRoot;
-    } else {
+        @include $prodFileInConfig;
+        if (isset($host, $db, $user, $pass)) {
+            $loaded = true;
+        }
+    }
+
+    if (!$loaded && file_exists($prodFileInRoot)) {
+        @include $prodFileInRoot;
+        if (isset($host, $db, $user, $pass)) {
+            $loaded = true;
+        }
+    }
+
+    if (!$loaded && file_exists($prodFileAboveRoot)) {
+        @include $prodFileAboveRoot;
+        if (isset($host, $db, $user, $pass)) {
+            $loaded = true;
+        }
+    }
+
+    if (!$loaded) {
         // Highly descriptive HTML diagnostic block to help you resolve this instantly!
         die("<div style='font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 25px; border: 1px solid #e11d48; background: #fff1f2; border-radius: 12px;'>
                 <h3 style='color: #be123c; margin-top: 0;'>🚨 Secret Credentials File Not Found</h3>
                 <p style='color: #4c0519; font-size: 14px; line-height: 1.5;'>
-                    The database system is running in Hostinger mode, but it could not find your secret <strong>db_prod.php</strong> file.
+                    The database system is running in Hostinger mode, but it could not find a valid <strong>db_prod.php</strong> file containing database credentials.
                 </p>
                 <p style='color: #4c0519; font-size: 14px;'>The server searched these three paths (Option 3 is recommended and Git-safe!):</p>
                 <ol style='font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.05); padding: 10px 10px 10px 30px; border-radius: 6px;'>
@@ -54,6 +72,7 @@ if ($isLocal) {
         $pass = 'your_hostinger_password'; 
     }
 }
+
 
 
 
