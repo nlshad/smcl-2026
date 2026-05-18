@@ -1,0 +1,358 @@
+<?php
+// admin/index.php
+session_start();
+require_once '../config/db.php';
+
+// Session protection
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header("Location: ../public/login.php");
+    exit;
+}
+
+$successMsg = '';
+$errorMsg = '';
+
+// Handle Admin Actions (Verify, Reject, Create Team)
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $action = $_POST['action'] ?? '';
+
+    try {
+        if ($action === 'verify_player') {
+            $playerId = (int)$_POST['player_id'];
+            $basePrice = (int)($_POST['base_price'] ?? 100);
+
+            // Update player status
+            $stmt = $pdo->prepare("UPDATE players SET payment_status = 'Verified', auction_status = 'Available', base_price = :base_price WHERE id = :id");
+            $stmt->execute(['base_price' => $basePrice, 'id' => $playerId]);
+            $successMsg = "🟢 Player payment verified. Player added to auction pool at base price of ₹$basePrice!";
+        } elseif ($action === 'reject_player') {
+            $playerId = (int)$_POST['player_id'];
+            
+            $stmt = $pdo->prepare("UPDATE players SET payment_status = 'Rejected', auction_status = 'Available' WHERE id = :id");
+            $stmt->execute(['id' => $playerId]);
+            $successMsg = "🔴 Player registration rejected.";
+        } elseif ($action === 'create_team') {
+            $teamName = trim($_POST['team_name'] ?? '');
+            $username = trim($_POST['username'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+            $purse = (int)($_POST['purse'] ?? 10000);
+
+            if (empty($teamName) || empty($username) || empty($password)) {
+                $errorMsg = "❌ All team setup fields are required.";
+            } else {
+                // Check if username is taken
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM teams WHERE manager_username = ?");
+                $stmt->execute([$username]);
+                if ($stmt->fetchColumn() > 0) {
+                    $errorMsg = "❌ Manager username already taken.";
+                } else {
+                    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, 'placeholder_logo.png', ?, ?, ?, ?, 0, 15)");
+                    $stmt->execute([$teamName, $username, $hashedPassword, $purse, $purse]);
+                    $successMsg = "🎉 Franchise Team '$teamName' created successfully! Manager can log in with username '$username'.";
+                }
+            }
+        }
+    } catch (Exception $e) {
+        $errorMsg = "❌ Error processing request: " . $e->getMessage();
+    }
+}
+
+// Fetch Data for Render
+try {
+    // 1. Fetch Registered Players
+    $stmt = $pdo->prepare("SELECT * FROM players ORDER BY payment_status DESC, id DESC");
+    $stmt->execute();
+    $players = $stmt->fetchAll();
+
+    // 2. Fetch Franchise Teams
+    $stmt = $pdo->prepare("SELECT * FROM teams ORDER BY id DESC");
+    $stmt->execute();
+    $teams = $stmt->fetchAll();
+} catch (Exception $e) {
+    die("Database Error: " . $e->getMessage());
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMCL Admin Dashboard</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            50: '#fdfbeb',
+                            100: '#fbf5c4',
+                            200: '#f7e985',
+                            300: '#f3d744',
+                            400: '#eebf17',
+                            500: '#d4a30c',
+                            600: '#a77c08',
+                            700: '#7e5a07',
+                            800: '#533c07',
+                            900: '#2b1f03',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #141414 0%, #030303 100%);
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(22, 22, 22, 0.7);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(212, 163, 12, 0.08);
+            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.55);
+        }
+    </style>
+</head>
+<body class="text-gray-255 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <span class="text-xl">👑</span>
+            <div>
+                <h1 class="text-lg font-black uppercase tracking-tight text-white">
+                    Super Admin Console
+                </h1>
+                <p class="text-[9px] text-gold-500 uppercase tracking-widest font-bold">SMCL Tournament Control Centre</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Link to Live Bidding Desk -->
+            <a href="auction.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-4 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center gap-1.5">
+                <span>🎤</span> Live Auction Room
+            </a>
+            <!-- Logout -->
+            <a href="../public/logout.php" class="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-3.5 py-2 rounded-lg transition">
+                Logout
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto space-y-6 relative">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,163,12,0.01)_0%,transparent_75%)] pointer-events-none"></div>
+
+        <!-- Success/Error Feedback Alerts -->
+        <?php if (!empty($successMsg)): ?>
+            <div class="bg-gold-950/20 border border-gold-500/40 text-gold-300 px-5 py-3.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <span>✔️</span>
+                <div><?php echo $successMsg; ?></div>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($errorMsg)): ?>
+            <div class="bg-red-950/20 border border-red-500/40 text-red-300 px-5 py-3.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <span>🚨</span>
+                <div><?php echo $errorMsg; ?></div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Split Grid (Left Panel: Players, Right Panel: Teams Builders) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Side: Player Roster & Approvals (8 Cols) -->
+            <div class="lg:col-span-8 glass-panel rounded-2xl p-5 border border-gold-500/15">
+                <div class="border-b border-white/5 pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5">
+                            <span>🏏</span> Player Registrations
+                        </h3>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Accept Payment references & Set Base Prices</p>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400 bg-white/5 border border-white/5 px-2.5 py-1 rounded-md">
+                        Total Players: <?php echo count($players); ?>
+                    </span>
+                </div>
+
+                <!-- Players Table Container -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 text-gray-500 font-semibold uppercase tracking-wider">
+                                <th class="pb-3 pr-2">Player</th>
+                                <th class="pb-3 px-2">Role/Hometown</th>
+                                <th class="pb-3 px-2 font-mono">UPI UTR Code</th>
+                                <th class="pb-3 px-2">Status</th>
+                                <th class="pb-3 pl-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <?php if (empty($players)): ?>
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-gray-500 uppercase tracking-widest font-semibold">
+                                        No player entries recorded.
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($players as $p): ?>
+                                    <tr class="hover:bg-white/[0.02] transition">
+                                        <!-- Player photo + name -->
+                                        <td class="py-3.5 pr-2 flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
+                                                <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                            </div>
+                                            <div>
+                                                <div class="font-bold text-white"><?php echo htmlspecialchars($p['name']); ?></div>
+                                                <div class="text-[10px] text-gray-500"><?php echo htmlspecialchars($p['mobile']); ?></div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Role / Hometown -->
+                                        <td class="py-3.5 px-2">
+                                            <div class="font-semibold text-gold-400"><?php echo htmlspecialchars($p['role']); ?></div>
+                                            <div class="text-[10px] text-gray-500">📍 <?php echo htmlspecialchars($p['place']); ?></div>
+                                        </td>
+
+                                        <!-- UTR Code -->
+                                        <td class="py-3.5 px-2 font-mono text-gray-300 font-semibold">
+                                            <?php echo htmlspecialchars($p['payment_utr']); ?>
+                                        </td>
+
+                                        <!-- Status Badge -->
+                                        <td class="py-3.5 px-2">
+                                            <?php if ($p['payment_status'] === 'Verified'): ?>
+                                                <span class="bg-gold-950/60 border border-gold-500/20 text-gold-400 font-bold px-2 py-0.5 rounded text-[9px] uppercase tracking-wide">Verified</span>
+                                            <?php elseif ($p['payment_status'] === 'Rejected'): ?>
+                                                <span class="bg-red-950/60 border border-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded text-[9px] uppercase tracking-wide">Rejected</span>
+                                            <?php else: ?>
+                                                <span class="bg-yellow-950/60 border border-yellow-500/20 text-yellow-400 font-bold px-2 py-0.5 rounded text-[9px] uppercase tracking-wide animate-pulse">Pending</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <!-- Actions verify/reject forms -->
+                                        <td class="py-3.5 pl-2 text-right">
+                                            <?php if ($p['payment_status'] === 'Pending'): ?>
+                                                <form action="index.php" method="POST" class="inline-flex gap-2 items-center">
+                                                    <input type="hidden" name="player_id" value="<?php echo $p['id']; ?>">
+                                                    <!-- Base Price Set Input -->
+                                                    <div class="flex items-center bg-black/40 border border-white/10 rounded-lg px-2 py-1 max-w-[90px]">
+                                                        <span class="text-gray-500 mr-0.5 font-bold">₹</span>
+                                                        <input type="number" name="base_price" value="100" min="50" step="50" required
+                                                               class="w-full bg-transparent text-white focus:outline-none font-bold text-center">
+                                                    </div>
+                                                    <button type="submit" name="action" value="verify_player"
+                                                            class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold px-3 py-1.5 rounded-lg transition text-[10px] uppercase tracking-wider">
+                                                        Verify
+                                                    </button>
+                                                    <button type="submit" name="action" value="reject_player"
+                                                            class="bg-red-950/30 border border-red-500/30 hover:bg-red-500/10 text-red-400 font-bold px-2 py-1.5 rounded-lg transition text-[10px] uppercase">
+                                                        Reject
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Completed</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Side: Teams List & Creation (4 Cols) -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Create Franchise Form -->
+                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
+                    <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
+                        <span>🔨</span> Add Franchise Team
+                    </h3>
+
+                    <form action="index.php" method="POST" class="space-y-4">
+                        <input type="hidden" name="action" value="create_team">
+                        
+                        <!-- Team Name -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Franchise Name</label>
+                            <input type="text" name="team_name" required placeholder="e.g. Wayanad Warriors"
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                        </div>
+
+                        <!-- Login Username -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Manager Username</label>
+                            <input type="text" name="username" required placeholder="e.g. wayanad"
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono">
+                        </div>
+
+                        <!-- Login Password -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Manager Password</label>
+                            <input type="password" name="password" required placeholder="••••••••"
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                        </div>
+
+                        <!-- Total Purse Points -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">purse balance (₹)</label>
+                            <input type="number" name="purse" value="10000" min="1000" step="500" required
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gold-400 font-bold focus:outline-none focus:border-gold-500 transition font-mono">
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit"
+                                class="w-full bg-gradient-to-r from-gold-500 to-amber-600 text-black font-extrabold uppercase text-[10px] tracking-wider py-3.5 px-4 rounded-xl hover:from-gold-400 hover:to-gold-500 transition duration-300">
+                            Build Franchise
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Franchise Standings Overview -->
+                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
+                    <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4">
+                        🏆 Franchise Standings
+                    </h3>
+                    <div class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                        <?php if (empty($teams)): ?>
+                            <div class="text-center py-6 text-xs text-gray-500 uppercase font-semibold">No teams added.</div>
+                        <?php else: ?>
+                            <?php foreach ($teams as $t): ?>
+                                <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between text-xs">
+                                    <div>
+                                        <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
+                                        <div class="text-[10px] text-gray-500 mt-1">
+                                            Roster: <strong class="text-gray-300 font-bold"><?php echo $t['current_squad_size']; ?>/<?php echo $t['max_squad_size']; ?></strong> 
+                                            | User: <strong class="text-gold-500 font-mono"><?php echo htmlspecialchars($t['manager_username']); ?></strong>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-gold-400 font-mono">₹<?php echo number_format($t['remaining_purse']); ?></div>
+                                        <div class="text-[9px] text-gray-500 mt-0.5">Purse Left</div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full glass-panel border-t border-gold-500/10 px-6 py-4 text-center text-xs text-gray-500 mt-6">
+        <p>© 2026 Shamsu Memorial Cricket League. Super Admin Administration.</p>
+    </footer>
+</body>
+</html>

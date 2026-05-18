@@ -1,0 +1,13 @@
+# Ignore custom uploaded player photos to keep repository light
+public/uploads/*
+!public/uploads/player_placeholder.jpg
+
+# Ignore OS junk metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
