@@ -30,13 +30,29 @@ if ($isLocal) {
     } elseif (file_exists($prodFileInRoot)) {
         require_once $prodFileInRoot;
     } else {
-        // Fallback placeholders if file is missing
+        // Highly descriptive HTML diagnostic block to help you resolve this instantly!
+        die("<div style='font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 25px; border: 1px solid #e11d48; background: #fff1f2; border-radius: 12px;'>
+                <h3 style='color: #be123c; margin-top: 0;'>🚨 Secret Credentials File Not Found</h3>
+                <p style='color: #4c0519; font-size: 14px; line-height: 1.5;'>
+                    The database system is running in Hostinger mode, but it could not find your secret <strong>db_prod.php</strong> file.
+                </p>
+                <p style='color: #4c0519; font-size: 14px;'>The server searched these two exact paths:</p>
+                <ol style='font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.05); padding: 10px 10px 10px 30px; border-radius: 6px;'>
+                    <li>$prodFileInConfig</li>
+                    <li>$prodFileInRoot</li>
+                </ol>
+                <p style='color: #4c0519; font-size: 14px; line-height: 1.5;'>
+                    Please open your <strong>Hostinger File Manager</strong>, make sure your file is named exactly <code>db_prod.php</code> (all lowercase), and place it in one of the locations shown above!
+                </p>
+             </div>");
+             
         $host = 'localhost'; 
         $db   = 'your_hostinger_db'; 
         $user = 'your_hostinger_user'; 
         $pass = 'your_hostinger_password'; 
     }
 }
+
 
 
 
