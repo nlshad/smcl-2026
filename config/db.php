@@ -19,6 +19,7 @@ if ($isLocal) {
     $db   = 'smcl_db';
     $user = 'root';
     $pass = '';
+} else {
     // Failsafe: Search in 'config/', root 'public_html/', or ONE folder above public_html (Git-Safe & Permanent!)
     $prodFileInConfig = __DIR__ . '/db_prod.php';
     $prodFileInRoot = dirname(__DIR__) . '/db_prod.php';
