@@ -18,17 +18,23 @@ if ($isLocal) {
     $pass = '';
 } else {
     // HOSTINGER PRODUCTION (Loads from an untracked file for GitHub security!)
-    $prodFile = __DIR__ . '/db_prod.php';
-    if (file_exists($prodFile)) {
-        require_once $prodFile;
+    // Failsafe: Search in both 'config/' and the root 'public_html/' folder
+    $prodFileInConfig = __DIR__ . '/db_prod.php';
+    $prodFileInRoot = dirname(__DIR__) . '/db_prod.php';
+
+    if (file_exists($prodFileInConfig)) {
+        require_once $prodFileInConfig;
+    } elseif (file_exists($prodFileInRoot)) {
+        require_once $prodFileInRoot;
     } else {
-        // Fallback placeholders in case the file isn't created yet
+        // Fallback placeholders if file is missing
         $host = 'localhost'; 
         $db   = 'your_hostinger_db'; 
         $user = 'your_hostinger_user'; 
         $pass = 'your_hostinger_password'; 
     }
 }
+
 
 
 
