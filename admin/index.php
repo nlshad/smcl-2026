@@ -52,6 +52,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $successMsg = "🎉 Franchise Team '$teamName' created successfully! Manager can log in with username '$username'.";
                 }
             }
+        } elseif ($action === 'delete_player') {
+            $playerId = (int)$_POST['player_id'];
+            $stmt = $pdo->prepare("DELETE FROM players WHERE id = ?");
+            $stmt->execute([$playerId]);
+            $successMsg = "🗑️ Player details deleted successfully!";
+        } elseif ($action === 'edit_player') {
+            $playerId = (int)$_POST['player_id'];
+            $name = trim($_POST['name'] ?? '');
+            $mobile = trim($_POST['mobile'] ?? '');
+            $place = trim($_POST['place'] ?? '');
+            $role = $_POST['role'] ?? 'Batsman';
+            $utr = trim($_POST['utr'] ?? '');
+            $status = $_POST['payment_status'] ?? 'Pending';
+            $basePrice = (int)($_POST['base_price'] ?? 100);
+
+            if (empty($name) || empty($mobile) || empty($place) || empty($utr)) {
+                $errorMsg = "❌ All player edit fields are required.";
+            } else {
+                $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ? WHERE id = ?");
+                $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $playerId]);
+                $successMsg = "✏️ Player details updated successfully!";
+            }
+        } elseif ($action === 'delete_team') {
+            $teamId = (int)$_POST['team_id'];
+            $stmt = $pdo->prepare("DELETE FROM teams WHERE id = ?");
+            $stmt->execute([$teamId]);
+            $successMsg = "🗑️ Franchise Team deleted successfully!";
+        } elseif ($action === 'edit_team') {
+            $teamId = (int)$_POST['team_id'];
+            $teamName = trim($_POST['team_name'] ?? '');
+            $username = trim($_POST['username'] ?? '');
+            $purse = (int)($_POST['purse'] ?? 10000);
+            $remPurse = (int)($_POST['remaining_purse'] ?? 10000);
+            $maxSquad = (int)($_POST['max_squad_size'] ?? 15);
+
+            if (empty($teamName) || empty($username)) {
+                $errorMsg = "❌ All team edit fields are required.";
+            } else {
+                if (!empty($_POST['password'])) {
+                    $hashedPassword = password_hash($_POST['password'], PASSWORD_BCRYPT);
+                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, manager_password = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ? WHERE id = ?");
+                    $stmt->execute([$teamName, $username, $hashedPassword, $purse, $remPurse, $maxSquad, $teamId]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ? WHERE id = ?");
+                    $stmt->execute([$teamName, $username, $purse, $remPurse, $maxSquad, $teamId]);
+                }
+                $successMsg = "✏️ Franchise Team details updated successfully!";
+            }
         }
     } catch (Exception $e) {
         $errorMsg = "❌ Error processing request: " . $e->getMessage();
@@ -237,29 +285,45 @@ try {
                                             <?php endif; ?>
                                         </td>
 
-                                        <!-- Actions verify/reject forms -->
+                                        <!-- Actions verify/reject + edit/delete forms -->
                                         <td class="py-3.5 pl-2 text-right">
-                                            <?php if ($p['payment_status'] === 'Pending'): ?>
-                                                <form action="index.php" method="POST" class="inline-flex gap-2 items-center">
-                                                    <input type="hidden" name="player_id" value="<?php echo $p['id']; ?>">
-                                                    <!-- Base Price Set Input -->
-                                                    <div class="flex items-center bg-black/40 border border-white/10 rounded-lg px-2 py-1 max-w-[90px]">
-                                                        <span class="text-gray-500 mr-0.5 font-bold">₹</span>
-                                                        <input type="number" name="base_price" value="100" min="50" step="50" required
-                                                               class="w-full bg-transparent text-white focus:outline-none font-bold text-center">
-                                                    </div>
-                                                    <button type="submit" name="action" value="verify_player"
-                                                            class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold px-3 py-1.5 rounded-lg transition text-[10px] uppercase tracking-wider">
-                                                        Verify
+                                            <div class="flex flex-col md:flex-row gap-2 items-center justify-end">
+                                                <?php if ($p['payment_status'] === 'Pending'): ?>
+                                                    <form action="index.php" method="POST" class="inline-flex gap-1.5 items-center">
+                                                        <input type="hidden" name="player_id" value="<?php echo $p['id']; ?>">
+                                                        <!-- Base Price Set Input -->
+                                                        <div class="flex items-center bg-black/40 border border-white/10 rounded-lg px-1.5 py-1 max-w-[75px]">
+                                                            <span class="text-gray-500 mr-0.5 font-bold">₹</span>
+                                                            <input type="number" name="base_price" value="100" min="50" step="50" required
+                                                                   class="w-full bg-transparent text-white focus:outline-none font-bold text-center text-[10px]">
+                                                        </div>
+                                                        <button type="submit" name="action" value="verify_player"
+                                                                class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold px-2 py-1.5 rounded-lg transition text-[9px] uppercase tracking-wider">
+                                                            Verify
+                                                        </button>
+                                                        <button type="submit" name="action" value="reject_player"
+                                                                class="bg-red-950/30 border border-red-500/30 hover:bg-red-500/10 text-red-400 font-bold px-1.5 py-1.5 rounded-lg transition text-[9px] uppercase">
+                                                            Reject
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+                                                
+                                                <div class="inline-flex gap-1.5 items-center">
+                                                    <!-- Edit Button -->
+                                                    <button onclick='openPlayerEditModal(<?php echo json_encode($p, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                                            class="bg-blue-950/40 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold px-2 py-1.5 rounded-lg transition text-[9px] uppercase">
+                                                        ✏️ Edit
                                                     </button>
-                                                    <button type="submit" name="action" value="reject_player"
-                                                            class="bg-red-950/30 border border-red-500/30 hover:bg-red-500/10 text-red-400 font-bold px-2 py-1.5 rounded-lg transition text-[10px] uppercase">
-                                                        Reject
-                                                    </button>
-                                                </form>
-                                            <?php else: ?>
-                                                <span class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Completed</span>
-                                            <?php endif; ?>
+                                                    <!-- Delete Button -->
+                                                    <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete player <?php echo htmlspecialchars($p['name'], ENT_QUOTES); ?>?');" class="inline">
+                                                        <input type="hidden" name="player_id" value="<?php echo $p['id']; ?>">
+                                                        <button type="submit" name="action" value="delete_player"
+                                                                class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1.5 rounded-lg transition text-[9px] uppercase">
+                                                            🗑️ Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -326,7 +390,7 @@ try {
                             <div class="text-center py-6 text-xs text-gray-500 uppercase font-semibold">No teams added.</div>
                         <?php else: ?>
                             <?php foreach ($teams as $t): ?>
-                                <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between text-xs">
+                                <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
                                     <div>
                                         <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
                                         <div class="text-[10px] text-gray-500 mt-1">
@@ -334,9 +398,26 @@ try {
                                             | User: <strong class="text-gold-500 font-mono"><?php echo htmlspecialchars($t['manager_username']); ?></strong>
                                         </div>
                                     </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-gold-400 font-mono">₹<?php echo number_format($t['remaining_purse']); ?></div>
-                                        <div class="text-[9px] text-gray-500 mt-0.5">Purse Left</div>
+                                    <div class="flex items-center justify-between sm:justify-end gap-3.5">
+                                        <div class="text-right">
+                                            <div class="font-bold text-gold-400 font-mono">₹<?php echo number_format($t['remaining_purse']); ?></div>
+                                            <div class="text-[9px] text-gray-500 mt-0.5">Purse Left</div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <!-- Edit Team -->
+                                            <button onclick='openTeamEditModal(<?php echo json_encode($t, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                                    class="bg-blue-950/40 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider">
+                                                ✏️ Edit
+                                            </button>
+                                            <!-- Delete Team -->
+                                            <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to delete team <?php echo htmlspecialchars($t['team_name'], ENT_QUOTES); ?>? This will release all their players.');" class="inline">
+                                                <input type="hidden" name="team_id" value="<?php echo $t['id']; ?>">
+                                                <button type="submit" name="action" value="delete_team"
+                                                        class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider">
+                                                    🗑️ Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -354,5 +435,196 @@ try {
     <footer class="w-full glass-panel border-t border-gold-500/10 px-6 py-4 text-center text-xs text-gray-500 mt-6">
         <p>© 2026 Shamsu Memorial Cricket League. Super Admin Administration.</p>
     </footer>
+
+    <!-- Player Edit Modal -->
+    <div id="playerEditModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-md w-full glass-panel rounded-2xl p-6 border border-gold-500/20 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
+                <h3 class="text-base font-bold text-gold-400">✏️ Edit Player Details</h3>
+                <button onclick="closePlayerEditModal()" class="text-gray-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <form action="index.php" method="POST" class="space-y-4">
+                <input type="hidden" name="action" value="edit_player">
+                <input type="hidden" name="player_id" id="edit_player_id">
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                    <input type="text" name="name" id="edit_player_name" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                </div>
+
+                <!-- Mobile -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Mobile Number</label>
+                    <input type="text" name="mobile" id="edit_player_mobile" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono">
+                </div>
+
+                <!-- Place -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Hometown / Place</label>
+                    <input type="text" name="place" id="edit_player_place" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Role -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Role</label>
+                        <select name="role" id="edit_player_role"
+                                class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-bold">
+                            <option value="Batsman">Batsman</option>
+                            <option value="Bowler">Bowler</option>
+                            <option value="All-Rounder">All-Rounder</option>
+                            <option value="Wicket-Keeper">Wicket-Keeper</option>
+                        </select>
+                    </div>
+
+                    <!-- Base Price -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Base Price (₹)</label>
+                        <input type="number" name="base_price" id="edit_player_base_price" min="50" step="50" required
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                    </div>
+                </div>
+
+                <!-- Payment UTR -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">UPI Payment UTR</label>
+                    <input type="text" name="utr" id="edit_player_utr" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                </div>
+
+                <!-- Payment Status -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Payment Status</label>
+                    <select name="payment_status" id="edit_player_status"
+                            class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-bold">
+                        <option value="Pending">Pending</option>
+                        <option value="Verified">Verified</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closePlayerEditModal()"
+                            class="flex-1 bg-zinc-900 border border-white/5 text-gray-400 font-bold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-white/5 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-gold-500 text-black font-extrabold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-gold-400 transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Team Edit Modal -->
+    <div id="teamEditModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-md w-full glass-panel rounded-2xl p-6 border border-gold-500/20 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
+                <h3 class="text-base font-bold text-gold-400">✏️ Edit Franchise Team</h3>
+                <button onclick="closeTeamEditModal()" class="text-gray-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <form action="index.php" method="POST" class="space-y-4">
+                <input type="hidden" name="action" value="edit_team">
+                <input type="hidden" name="team_id" id="edit_team_id">
+
+                <!-- Team Name -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Franchise Name</label>
+                    <input type="text" name="team_name" id="edit_team_name" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                </div>
+
+                <!-- Manager Username -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Manager Username</label>
+                    <input type="text" name="username" id="edit_team_username" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono">
+                </div>
+
+                <!-- Manager Password -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">New Password (Leave blank to keep current)</label>
+                    <input type="password" name="password" placeholder="••••••••"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Total Purse -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Purse (₹)</label>
+                        <input type="number" name="purse" id="edit_team_purse" min="1000" step="500" required
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                    </div>
+
+                    <!-- Remaining Purse -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Remaining Purse (₹)</label>
+                        <input type="number" name="remaining_purse" id="edit_team_remaining_purse" min="0" step="100" required
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                    </div>
+                </div>
+
+                <!-- Max Squad Size -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Max Squad Size</label>
+                    <input type="number" name="max_squad_size" id="edit_team_max_squad" min="5" max="30" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeTeamEditModal()"
+                            class="flex-1 bg-zinc-900 border border-white/5 text-gray-400 font-bold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-white/5 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-gold-500 text-black font-extrabold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-gold-400 transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modals Script Control -->
+    <script>
+    function openPlayerEditModal(player) {
+        document.getElementById('edit_player_id').value = player.id;
+        document.getElementById('edit_player_name').value = player.name;
+        document.getElementById('edit_player_mobile').value = player.mobile;
+        document.getElementById('edit_player_place').value = player.place;
+        document.getElementById('edit_player_role').value = player.role;
+        document.getElementById('edit_player_base_price').value = player.base_price;
+        document.getElementById('edit_player_utr').value = player.payment_utr;
+        document.getElementById('edit_player_status').value = player.payment_status;
+        
+        document.getElementById('playerEditModal').classList.remove('hidden');
+    }
+
+    function closePlayerEditModal() {
+        document.getElementById('playerEditModal').classList.add('hidden');
+    }
+
+    function openTeamEditModal(team) {
+        document.getElementById('edit_team_id').value = team.id;
+        document.getElementById('edit_team_name').value = team.team_name;
+        document.getElementById('edit_team_username').value = team.manager_username;
+        document.getElementById('edit_team_purse').value = team.total_purse;
+        document.getElementById('edit_team_remaining_purse').value = team.remaining_purse;
+        document.getElementById('edit_team_max_squad').value = team.max_squad_size;
+        
+        document.getElementById('teamEditModal').classList.remove('hidden');
+    }
+
+    function closeTeamEditModal() {
+        document.getElementById('teamEditModal').classList.add('hidden');
+    }
+    </script>
 </body>
 </html>
