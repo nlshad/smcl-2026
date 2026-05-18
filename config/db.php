@@ -6,10 +6,13 @@ error_reporting(E_ALL);
 
 $charset = 'utf8mb4';
 
-// Auto-detect environment (Local XAMPP vs. Hostinger Cloud)
-$isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) 
-           || ($_SERVER['HTTP_HOST'] ?? '') === 'localhost' 
-           || ($_SERVER['SERVER_NAME'] ?? '') === 'localhost';
+// Robust Auto-detect environment (Looks strictly at what is in your browser's address bar)
+$hostHeader = $_SERVER['HTTP_HOST'] ?? '';
+$isLocal = $hostHeader === 'localhost' 
+           || $hostHeader === '127.0.0.1' 
+           || str_starts_with($hostHeader, '127.0.0.1:') 
+           || str_starts_with($hostHeader, '192.168.');
+
 
 if ($isLocal) {
     $host = '127.0.0.1';
