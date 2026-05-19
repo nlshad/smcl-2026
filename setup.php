@@ -3,6 +3,14 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Security safeguard: restrict execution of setup.php in production unless a secure key is supplied.
+$isLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || ($_SERVER['SERVER_NAME'] === 'localhost');
+$secretKey = 'SMCL_SETUP_SECURE_2026'; // Authorization key to execute in remote environments
+if (!$isLocal && (!isset($_GET['key']) || $_GET['key'] !== $secretKey)) {
+    http_response_code(403);
+    die("Forbidden: setup.php cannot be executed on this environment without the correct authorization key query parameter.");
+}
+
 require_once 'config/db.php'; // Inherit environment-aware credentials dynamically!
 
 $message = [];
@@ -119,15 +127,21 @@ try {
 
     // 5. Seed Initial Data
     
-    // Seed Admin
+    // Seed Admin (Upsert secure password dynamically)
     $adminUser = 'admin';
-    $adminPass = password_hash('admin123', PASSWORD_BCRYPT);
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM admins WHERE username = ?");
+    $rawAdminPass = 'SMCL@Admin#2026';
+    $adminPass = password_hash($rawAdminPass, PASSWORD_BCRYPT);
+    $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
     $stmt->execute([$adminUser]);
-    if ($stmt->fetchColumn() == 0) {
+    $existingAdmin = $stmt->fetch();
+    if ($existingAdmin) {
+        $stmt = $pdo->prepare("UPDATE admins SET password = ? WHERE id = ?");
+        $stmt->execute([$adminPass, $existingAdmin['id']]);
+        $message[] = "👤 Updated Super Admin password to secure defaults.";
+    } else {
         $stmt = $pdo->prepare("INSERT INTO admins (username, password) VALUES (?, ?)");
         $stmt->execute([$adminUser, $adminPass]);
-        $message[] = "👤 Seeded Default Super Admin: <strong>username: admin | password: admin123</strong>";
+        $message[] = "👤 Seeded Super Admin: <strong>username: admin | password: [configured secure password]</strong>";
     }
 
     // Seed Teams

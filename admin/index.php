@@ -75,9 +75,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         } elseif ($action === 'delete_player') {
             $playerId = (int)$_POST['player_id'];
+            
+            $pdo->beginTransaction();
             $stmt = $pdo->prepare("DELETE FROM players WHERE id = ?");
             $stmt->execute([$playerId]);
-            $successMsg = "🗑️ Player details deleted successfully!";
+
+            // Auto-recalculate: dynamically sync all franchise remaining purses and squad sizes
+            $pdo->exec("
+                UPDATE teams t 
+                SET 
+                    current_squad_size = (SELECT COUNT(id) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'),
+                    remaining_purse = total_purse - COALESCE((SELECT SUM(sold_price) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'), 0)
+            ");
+            $pdo->commit();
+            
+            $successMsg = "🗑️ Player details deleted successfully, and franchise rosters/budgets were adjusted!";
         } elseif ($action === 'edit_player') {
             $playerId = (int)$_POST['player_id'];
             $name = trim($_POST['name'] ?? '');

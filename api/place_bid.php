@@ -15,6 +15,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $teamId = isset($_POST['team_id']) ? (int)$_POST['team_id'] : 0;
     $bidAmount = isset($_POST['bid_amount']) ? (int)$_POST['bid_amount'] : 0;
 
+    session_start();
+
+    // Verify authorized actor (either admin or the specific manager for this team)
+    $isAuthorized = false;
+    if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+        $isAuthorized = true;
+    } elseif (isset($_SESSION['manager_logged_in']) && $_SESSION['manager_logged_in'] === true && (int)$_SESSION['team_id'] === $teamId) {
+        $isAuthorized = true;
+    }
+
+    if (!$isAuthorized) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized action. Bidding blocked.']);
+        exit;
+    }
+
     if ($playerId === 0 || $teamId === 0 || $bidAmount === 0) {
         echo json_encode(['success' => false, 'error' => 'Invalid bid parameters.']);
         exit;
