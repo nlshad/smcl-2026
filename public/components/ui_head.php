@@ -1,3 +1,8 @@
+<?php
+// Resolve base path dynamically for public assets depending on file URL context
+$assetBase = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false || strpos($_SERVER['SCRIPT_NAME'], '/manager/') !== false) ? '../public/' : '';
+?>
+<link rel="icon" type="image/png" href="<?php echo $assetBase; ?>uploads/league_logo.png">
 <!-- Tailwind CSS Play CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>

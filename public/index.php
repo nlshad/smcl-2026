@@ -23,7 +23,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between z-10 sticky top-0">
         <!-- Logo -->
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-trophy text-gold-400 text-lg"></i>
+            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-9 h-9 object-contain">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600">
                     SMCL 2026

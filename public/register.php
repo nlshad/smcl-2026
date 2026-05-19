@@ -98,6 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Registration — SMCL 2026</title>
+    <link rel="icon" type="image/png" href="uploads/league_logo.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -145,6 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Top Banner -->
         <div class="bg-gradient-to-r from-gold-950 via-black to-gold-950 p-6 border-b border-gold-500/20 text-center relative">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(218,165,32,0.15)_0%,transparent_70%)] pointer-events-none"></div>
+            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-16 h-16 object-contain mx-auto mb-3">
             <a href="index.php" class="text-xs uppercase tracking-widest text-gold-400 hover:text-gold-300 font-semibold mb-2 inline-flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Live Dashboard
             </a>

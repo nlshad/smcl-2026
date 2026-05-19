@@ -56,7 +56,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-briefcase text-gold-400 text-lg"></i>
+            <img src="../public/uploads/<?php echo htmlspecialchars($team['logo'] ? $team['logo'] : 'team_placeholder.jpg'); ?>" alt="Team Logo" class="w-8 h-8 object-contain bg-black/40 p-0.5 rounded border border-white/10">
             <div>
                 <h1 class="text-lg font-black uppercase tracking-tight text-white">
                     <?php echo htmlspecialchars($team['team_name']); ?>
@@ -66,6 +66,12 @@ try {
         </div>
 
         <div class="flex items-center gap-4">
+            <!-- League Logo Badge -->
+            <div class="hidden sm:flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
+                <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-6.5 h-6 object-contain">
+                <span class="text-gold-400 text-[10px] font-black uppercase tracking-wider">SMCL 2026</span>
+            </div>
+
             <!-- Sound Toggle -->
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
                 <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>

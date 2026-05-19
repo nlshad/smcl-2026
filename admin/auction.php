@@ -34,7 +34,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-microphone text-gold-400 text-lg"></i>
+            <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-8 h-8 object-contain">
             <div>
                 <h1 class="text-lg font-black uppercase tracking-tight text-white flex items-center gap-2">
                     SMCL Auctioneer Desk <span class="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase animate-pulse">Live</span>

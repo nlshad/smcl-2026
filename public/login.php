@@ -73,6 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMCL Login Portal</title>
+    <link rel="icon" type="image/png" href="uploads/league_logo.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -120,7 +121,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,163,12,0.08)_0%,transparent_60%)] pointer-events-none rounded-2xl"></div>
 
         <!-- Tournament Emblem / Header -->
-        <div class="text-center mb-8 relative">
+        <div class="text-center mb-6 relative">
+            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-16 h-16 object-contain mx-auto mb-3">
             <a href="index.php" class="text-xs uppercase tracking-widest text-gold-500 hover:text-gold-300 font-semibold mb-2 inline-flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-arrow-left text-[10px]"></i> Enter Spectator Room
             </a>
