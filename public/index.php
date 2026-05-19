@@ -181,14 +181,23 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                     </h3>
                     <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all finalized player auctions</p>
                 </div>
-                <!-- Quick Filter / Summary Counters -->
-                <div class="flex items-center gap-2.5 text-[10px]">
-                    <span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg font-bold">
-                        Sold: <strong class="text-white text-xs font-black" id="count-sold">0</strong>
-                    </span>
-                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-lg font-bold">
-                        Unsold: <strong class="text-white text-xs font-black" id="count-unsold">0</strong>
-                    </span>
+                <!-- Search and Filters Container -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 w-full sm:w-auto">
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-60">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                        <input type="text" id="player-search-input" oninput="renderCompletedPlayers()" placeholder="Search players, roles, places, teams..."
+                               class="w-full bg-black/60 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-[11px] text-white focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition placeholder-gray-600">
+                    </div>
+                    <!-- Quick Filter / Summary Counters -->
+                    <div class="flex items-center gap-2 text-[10px] shrink-0">
+                        <span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-1.5 rounded-lg font-bold">
+                            Sold: <strong class="text-white text-xs font-black" id="count-sold">0</strong>
+                        </span>
+                        <span class="bg-red-500/10 border border-red-500/20 text-red-400 px-2.5 py-1.5 rounded-lg font-bold">
+                            Unsold: <strong class="text-white text-xs font-black" id="count-unsold">0</strong>
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -215,6 +224,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
         let activePlayerId = null;
         let lastBidAmount = 0;
         let isMuted = false;
+        let allCompletedPlayers = [];
 
         // Premium Sound Engine (Zero-latency Web Audio API Synth)
         const SMCLSoundEngine = {
@@ -505,88 +515,111 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 }
 
                 // 4. Sync Completed Player Auctions
-                const completedGrid = document.getElementById('completed-players-grid');
-                const completedEmpty = document.getElementById('completed-empty-box');
-                const countSoldEl = document.getElementById('count-sold');
-                const countUnsoldEl = document.getElementById('count-unsold');
-
-                completedGrid.innerHTML = '';
-
-                let soldCount = 0;
-                let unsoldCount = 0;
-
-                if (data.completed_players && data.completed_players.length > 0) {
-                    completedEmpty.classList.add('hidden');
-                    completedGrid.classList.remove('hidden');
-
-                    data.completed_players.forEach(p => {
-                        if (p.auction_status === 'Sold') soldCount++;
-                        if (p.auction_status === 'Unsold') unsoldCount++;
-
-                        const card = document.createElement('div');
-                        card.className = "glass-panel rounded-2xl p-5 border border-gold-500/10 hover:border-gold-500/20 cursor-pointer transition-all duration-300 relative group flex flex-col justify-between overflow-hidden shadow-lg shadow-black/40";
-                        card.onclick = () => openPlayerDetailsModal(p.id);
-                        
-                        card.innerHTML = `
-                            <!-- Top Info Row -->
-                            <div class="flex items-center justify-between pb-4 border-b border-white/5">
-                                <div class="flex items-center gap-3.5">
-                                    <!-- Player Profile Picture -->
-                                    <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md">
-                                        <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover">
-                                    </div>
-                                    <!-- Name & Details -->
-                                    <div>
-                                        <h4 class="text-sm font-extrabold text-white group-hover:text-gold-400 transition-colors">${p.name}</h4>
-                                        <p class="text-[9px] text-gray-400 mt-0.5">${p.role} &bull; ${p.place}</p>
-                                    </div>
-                                </div>
-                                <!-- Pill Badge -->
-                                <span class="px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold ${
-                                    p.auction_status === 'Sold' 
-                                        ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' 
-                                        : 'bg-red-500/10 border border-red-500/25 text-red-400'
-                                }">
-                                    ${p.auction_status}
-                                </span>
-                            </div>
-
-                            <!-- Bottom Price and Team Grid -->
-                            <div class="grid grid-cols-3 gap-2 pt-3.5 text-center items-center">
-                                <!-- Base Price -->
-                                <div class="border-r border-white/5 flex flex-col">
-                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Base Price</span>
-                                    <span class="text-xs font-black text-gray-200 mt-1 font-mono">₹${p.base_price}</span>
-                                </div>
-                                <!-- Final Price -->
-                                <div class="border-r border-white/5 flex flex-col">
-                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Final Price</span>
-                                    <span class="text-xs font-black text-gold-400 mt-1 font-mono">${p.auction_status === 'Sold' ? '₹' + p.sold_price : '—'}</span>
-                                </div>
-                                <!-- Team -->
-                                <div class="flex flex-col items-center justify-center ${p.auction_status === 'Sold' ? 'cursor-pointer hover:bg-white/5 p-1 rounded transition' : ''}" ${p.auction_status === 'Sold' ? `onclick="event.stopPropagation(); openTeamDetailsModal(${p.team_id})"` : ''}>
-                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
-                                    ${p.auction_status === 'Sold' 
-                                        ? `<div class="flex items-center gap-1.5 mt-1 justify-center max-w-[90px]">
-                                             <img src="uploads/${p.team_logo ? p.team_logo : 'team_placeholder.jpg'}" class="w-4 h-4 rounded object-contain bg-black/40 p-0.5 border border-white/10">
-                                             <span class="text-[10px] font-extrabold text-white tracking-tight truncate">${p.team_name}</span>
-                                           </div>` 
-                                        : '<span class="text-xs font-bold text-gray-600 mt-1">—</span>'
-                                    }
-                                </div>
-                            </div>
-                        `;
-                        completedGrid.appendChild(card);
-                    });
-                } else {
-                    completedEmpty.classList.remove('hidden');
-                }
-
-                countSoldEl.innerText = soldCount;
-                countUnsoldEl.innerText = unsoldCount;
+                allCompletedPlayers = data.completed_players || [];
+                renderCompletedPlayers();
 
             } catch (error) {
                 console.error("Dashboard synchronization error:", error);
+            }
+        }
+
+        // Render completed players list dynamically (supports real-time search filtering)
+        function renderCompletedPlayers() {
+            const completedGrid = document.getElementById('completed-players-grid');
+            const completedEmpty = document.getElementById('completed-empty-box');
+            const countSoldEl = document.getElementById('count-sold');
+            const countUnsoldEl = document.getElementById('count-unsold');
+            const searchInput = document.getElementById('player-search-input');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            completedGrid.innerHTML = '';
+
+            let soldCount = 0;
+            let unsoldCount = 0;
+
+            // Compute overall totals from unfiltered array
+            allCompletedPlayers.forEach(p => {
+                if (p.auction_status === 'Sold') soldCount++;
+                if (p.auction_status === 'Unsold') unsoldCount++;
+            });
+
+            countSoldEl.innerText = soldCount;
+            countUnsoldEl.innerText = unsoldCount;
+
+            // Apply search query
+            const filteredPlayers = allCompletedPlayers.filter(p => {
+                if (!searchQuery) return true;
+                return (
+                    p.name.toLowerCase().includes(searchQuery) ||
+                    p.role.toLowerCase().includes(searchQuery) ||
+                    p.place.toLowerCase().includes(searchQuery) ||
+                    (p.team_name && p.team_name.toLowerCase().includes(searchQuery))
+                );
+            });
+
+            if (filteredPlayers.length > 0) {
+                completedEmpty.classList.add('hidden');
+                completedGrid.classList.remove('hidden');
+
+                filteredPlayers.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = "glass-panel rounded-2xl p-5 border border-gold-500/10 hover:border-gold-500/20 cursor-pointer transition-all duration-300 relative group flex flex-col justify-between overflow-hidden shadow-lg shadow-black/40";
+                    card.onclick = () => openPlayerDetailsModal(p.id);
+                    
+                    card.innerHTML = `
+                        <!-- Top Info Row -->
+                        <div class="flex items-center justify-between pb-4 border-b border-white/5">
+                            <div class="flex items-center gap-3.5">
+                                <!-- Player Profile Picture -->
+                                <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md">
+                                    <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover">
+                                </div>
+                                <!-- Name & Details -->
+                                <div>
+                                    <h4 class="text-sm font-extrabold text-white group-hover:text-gold-400 transition-colors">${p.name}</h4>
+                                    <p class="text-[9px] text-gray-400 mt-0.5">${p.role} &bull; ${p.place}</p>
+                                </div>
+                            </div>
+                            <!-- Pill Badge -->
+                            <span class="px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold ${
+                                p.auction_status === 'Sold' 
+                                    ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' 
+                                    : 'bg-red-500/10 border border-red-500/25 text-red-400'
+                            }">
+                                ${p.auction_status}
+                            </span>
+                        </div>
+
+                        <!-- Bottom Price and Team Grid -->
+                        <div class="grid grid-cols-3 gap-2 pt-3.5 text-center items-center">
+                            <!-- Base Price -->
+                            <div class="border-r border-white/5 flex flex-col">
+                                <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Base Price</span>
+                                <span class="text-xs font-black text-gray-200 mt-1 font-mono">₹${p.base_price}</span>
+                            </div>
+                            <!-- Final Price -->
+                            <div class="border-r border-white/5 flex flex-col">
+                                <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Final Price</span>
+                                <span class="text-xs font-black text-gold-400 mt-1 font-mono">${p.auction_status === 'Sold' ? '₹' + p.sold_price : '—'}</span>
+                            </div>
+                            <!-- Team -->
+                            <div class="flex flex-col items-center justify-center ${p.auction_status === 'Sold' ? 'cursor-pointer hover:bg-white/5 p-1 rounded transition' : ''}" ${p.auction_status === 'Sold' ? `onclick="event.stopPropagation(); openTeamDetailsModal(${p.team_id})"` : ''}>
+                                <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
+                                ${p.auction_status === 'Sold' 
+                                    ? `<div class="flex items-center gap-1.5 mt-1 justify-center max-w-[90px]">
+                                         <img src="uploads/${p.team_logo ? p.team_logo : 'team_placeholder.jpg'}" class="w-4 h-4 rounded object-contain bg-black/40 p-0.5 border border-white/10">
+                                         <span class="text-[10px] font-extrabold text-white tracking-tight truncate">${p.team_name}</span>
+                                       </div>` 
+                                    : '<span class="text-xs font-bold text-gray-600 mt-1">—</span>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                    completedGrid.appendChild(card);
+                });
+            } else {
+                completedEmpty.classList.remove('hidden');
+                completedEmpty.innerText = searchQuery ? "No completed players match your query." : "No finalized auctions yet. Bids are ongoing!";
             }
         }
 
