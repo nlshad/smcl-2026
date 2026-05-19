@@ -187,7 +187,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
 
         <div class="mt-8 border-t border-white/5 pt-4 text-center text-xs text-gray-500">
-            Forgot credentials? Consult developer test logs in <a href="../setup.php" class="text-gold-500 hover:underline">setup.php</a>.
+            Forgot credentials? Contact the SMCL Tournament Coordinator.
         </div>
     </div>
 </body>
