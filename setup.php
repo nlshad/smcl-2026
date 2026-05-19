@@ -127,21 +127,28 @@ try {
 
     // 5. Seed Initial Data
     
-    // Seed Admin (Upsert secure password dynamically)
-    $adminUser = 'admin';
-    $rawAdminPass = 'SMCL@Admin#2026_Secure';
-    $adminPass = password_hash($rawAdminPass, PASSWORD_BCRYPT);
-    $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
-    $stmt->execute([$adminUser]);
-    $existingAdmin = $stmt->fetch();
-    if ($existingAdmin) {
-        $stmt = $pdo->prepare("UPDATE admins SET password = ? WHERE id = ?");
-        $stmt->execute([$adminPass, $existingAdmin['id']]);
-        $message[] = "👤 Updated Super Admin password to secure defaults.";
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO admins (username, password) VALUES (?, ?)");
-        $stmt->execute([$adminUser, $adminPass]);
-        $message[] = "👤 Seeded Super Admin: <strong>username: admin | password: [configured secure password]</strong>";
+    // Seed Admins (Upsert secure passwords dynamically)
+    $adminsToSeed = [
+        ['admin', 'SMCL@Admin#2026_Secure'],
+        ['siraj', 'Siru@2026']
+    ];
+
+    foreach ($adminsToSeed as $adminInfo) {
+        $uName = $adminInfo[0];
+        $uPass = password_hash($adminInfo[1], PASSWORD_BCRYPT);
+        
+        $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
+        $stmt->execute([$uName]);
+        $existingAdmin = $stmt->fetch();
+        if ($existingAdmin) {
+            $stmt = $pdo->prepare("UPDATE admins SET password = ? WHERE id = ?");
+            $stmt->execute([$uPass, $existingAdmin['id']]);
+            $message[] = "👤 Updated Admin '{$uName}' password to secure defaults.";
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO admins (username, password) VALUES (?, ?)");
+            $stmt->execute([$uName, $uPass]);
+            $message[] = "👤 Seeded Admin: <strong>username: {$uName}</strong>";
+        }
     }
 
     // Seed Teams
