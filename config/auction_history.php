@@ -15,7 +15,7 @@ function get_current_auction_state_snapshot($pdo) {
     $playersState = $stmt->fetchAll();
 
     // 3. Get all bids state
-    $stmt = $pdo->query("SELECT id, player_id, team_id, bid_amount, bid_time FROM bids");
+    $stmt = $pdo->query("SELECT id, player_id, team_id, bid_amount, created_at FROM bids");
     $bidsState = $stmt->fetchAll();
 
     // 4. Get all teams state
@@ -68,13 +68,13 @@ function restore_auction_state_snapshot($pdo, $snapshot) {
     // 4. Restore bids list
     $pdo->exec("DELETE FROM bids");
     foreach ($snapshot['bids_state'] as $bid) {
-        $stmt = $pdo->prepare("INSERT INTO bids (id, player_id, team_id, bid_amount, bid_time) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO bids (id, player_id, team_id, bid_amount, created_at) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([
             $bid['id'],
             $bid['player_id'],
             $bid['team_id'],
             $bid['bid_amount'],
-            $bid['bid_time']
+            $bid['created_at']
         ]);
     }
 }
