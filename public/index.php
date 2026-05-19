@@ -45,6 +45,10 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 
             <!-- Login Quick Redirects -->
             <div class="flex gap-1.5 sm:gap-2 text-[9px] sm:text-xs">
+                <!-- PWA Install Button -->
+                <button id="pwa-install-btn" class="hidden text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-cloud-arrow-down text-gold-400"></i> App
+                </button>
                 <?php if ($registrationEnabled): ?>
                     <a href="register.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition flex items-center justify-center">
                         Register
@@ -638,6 +642,32 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             } catch (e) {
                 console.error("Failed to lookup past player status:", e);
             }
+        }
+
+        // PWA Install Prompt Script
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', (e) => {
+                if (!deferredPrompt) return;
+                installBtn.classList.add('hidden');
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User installed the PWA app');
+                    }
+                    deferredPrompt = null;
+                });
+            });
         }
 
     </script>

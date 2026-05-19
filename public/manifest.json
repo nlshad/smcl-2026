@@ -1,0 +1,36 @@
+{
+  "name": "SMCL 2026 Live Auction",
+  "short_name": "SMCL 2026",
+  "description": "Shamsu Memorial Cricket League Live Franchise Auction Arena",
+  "start_url": "index.php",
+  "display": "standalone",
+  "background_color": "#020202",
+  "theme_color": "#d4a30c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "uploads/league_logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "uploads/league_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Register Player",
+      "url": "register.php",
+      "description": "Register a new cricket player for the auction"
+    },
+    {
+      "name": "Enter Portal",
+      "url": "login.php",
+      "description": "Log into your Manager or Administrator dashboard"
+    }
+  ]
+}

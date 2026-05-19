@@ -3,6 +3,25 @@
 $assetBase = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false || strpos($_SERVER['SCRIPT_NAME'], '/manager/') !== false) ? '../public/' : '';
 ?>
 <link rel="icon" type="image/png" href="<?php echo $assetBase; ?>uploads/league_logo.png">
+<link rel="manifest" href="<?php echo $assetBase; ?>manifest.json">
+<meta name="theme-color" content="#d4a30c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SMCL 2026">
+<link rel="apple-touch-icon" href="<?php echo $assetBase; ?>uploads/league_logo.png">
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        const isPublicScope = <?php echo (strpos($_SERVER['SCRIPT_NAME'], '/admin/') === false && strpos($_SERVER['SCRIPT_NAME'], '/manager/') === false) ? 'true' : 'false'; ?>;
+        if (isPublicScope) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SMCL Service Worker Registered! Scope: ', reg.scope))
+                .catch(err => console.error('Service Worker registration failed: ', err));
+        }
+    });
+}
+</script>
 <!-- Tailwind CSS Play CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
