@@ -149,7 +149,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <i class="hgi-stroke hgi-crown text-gold-400 text-lg"></i>
+            <i class="fa-solid fa-crown text-gold-400 text-lg"></i>
             <div>
                 <h1 class="text-lg font-black uppercase tracking-tight text-white">
                     Super Admin Console
@@ -161,7 +161,7 @@ try {
         <div class="flex items-center gap-3">
             <!-- Link to Live Bidding Desk -->
             <a href="auction.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-4 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center gap-1.5">
-                <i class="hgi-stroke hgi-microphone-01 text-sm text-black"></i> Live Auction Room
+                <i class="fa-solid fa-microphone text-sm text-black"></i> Live Auction Room
             </a>
             <!-- Logout -->
             <a href="../public/logout.php" class="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-3.5 py-2 rounded-lg transition">
@@ -177,14 +177,14 @@ try {
         <!-- Success/Error Feedback Alerts -->
         <?php if (!empty($successMsg)): ?>
             <div class="bg-gold-950/20 border border-gold-500/40 text-gold-300 px-5 py-3.5 rounded-xl text-xs font-semibold flex items-center gap-2">
-                <i class="hgi-stroke hgi-checkmark-circle-01 text-emerald-400 text-sm"></i>
+                <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
                 <div><?php echo $successMsg; ?></div>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($errorMsg)): ?>
             <div class="bg-red-950/20 border border-red-500/40 text-red-300 px-5 py-3.5 rounded-xl text-xs font-semibold flex items-center gap-2">
-                <i class="hgi-stroke hgi-alert-circle text-red-400 text-sm"></i>
+                <i class="fa-solid fa-circle-exclamation text-red-400 text-sm"></i>
                 <div><?php echo $errorMsg; ?></div>
             </div>
         <?php endif; ?>
@@ -197,7 +197,7 @@ try {
                 <div class="border-b border-white/5 pb-3 mb-4 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5">
-                            <i class="hgi-stroke hgi-cricket-helmet text-base text-gold-400"></i> Player Registrations
+                            <i class="fa-solid fa-baseball-bat-ball text-base text-gold-400"></i> Player Registrations
                         </h3>
                         <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Accept Payment references & Set Base Prices</p>
                     </div>
@@ -242,7 +242,7 @@ try {
                                         <!-- Role / Hometown -->
                                         <td class="py-3.5 px-2">
                                             <div class="font-semibold text-gold-400"><?php echo htmlspecialchars($p['role']); ?></div>
-                                            <div class="text-[10px] text-gray-500 flex items-center gap-0.5"><i class="hgi-stroke hgi-location-01 text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></div>
+                                            <div class="text-[10px] text-gray-500 flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></div>
                                         </td>
 
                                         <!-- UTR Code -->
@@ -288,14 +288,14 @@ try {
                                                     <!-- Edit Button -->
                                                     <button onclick='openPlayerEditModal(<?php echo json_encode($p, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
                                                             class="bg-blue-950/40 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold px-2 py-1.5 rounded-lg transition text-[9px] uppercase flex items-center gap-1">
-                                                        <i class="hgi-stroke hgi-pencil-edit-01 text-[10px]"></i> Edit
+                                                        <i class="fa-solid fa-pen text-[10px]"></i> Edit
                                                     </button>
                                                     <!-- Delete Button -->
                                                     <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete player <?php echo htmlspecialchars($p['name'], ENT_QUOTES); ?>?');" class="inline">
                                                         <input type="hidden" name="player_id" value="<?php echo $p['id']; ?>">
                                                         <button type="submit" name="action" value="delete_player"
                                                                 class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1.5 rounded-lg transition text-[9px] uppercase flex items-center gap-1">
-                                                            <i class="hgi-stroke hgi-delete-02 text-[10px]"></i> Delete
+                                                            <i class="fa-solid fa-trash-can text-[10px]"></i> Delete
                                                         </button>
                                                     </form>
                                                 </div>
@@ -314,7 +314,7 @@ try {
                 <!-- Create Franchise Form -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
-                        <i class="hgi-stroke hgi-add-01 text-base text-gold-400"></i> Add Franchise Team
+                        <i class="fa-solid fa-plus text-base text-gold-400"></i> Add Franchise Team
                     </h3>
 
                     <form action="index.php" method="POST" class="space-y-4">
@@ -359,7 +359,7 @@ try {
                 <!-- Franchise Standings Overview -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
-                        <i class="hgi-stroke hgi-trophy text-base text-gold-400"></i> Franchise Standings
+                        <i class="fa-solid fa-trophy text-base text-gold-400"></i> Franchise Standings
                     </h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1">
                         <?php if (empty($teams)): ?>
@@ -383,14 +383,14 @@ try {
                                             <!-- Edit Team -->
                                             <button onclick='openTeamEditModal(<?php echo json_encode($t, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
                                                     class="bg-blue-950/40 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1">
-                                                <i class="hgi-stroke hgi-pencil-edit-01 text-[10px]"></i> Edit
+                                                <i class="fa-solid fa-pen text-[10px]"></i> Edit
                                             </button>
                                             <!-- Delete Team -->
                                             <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to delete team <?php echo htmlspecialchars($t['team_name'], ENT_QUOTES); ?>? This will release all their players.');" class="inline">
                                                 <input type="hidden" name="team_id" value="<?php echo $t['id']; ?>">
                                                 <button type="submit" name="action" value="delete_team"
                                                         class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1">
-                                                    <i class="hgi-stroke hgi-delete-02 text-[10px]"></i> Delete
+                                                    <i class="fa-solid fa-trash-can text-[10px]"></i> Delete
                                                 </button>
                                             </form>
                                         </div>
@@ -416,8 +416,8 @@ try {
     <div id="playerEditModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="max-w-md w-full glass-panel rounded-2xl p-6 border border-gold-500/20 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
-                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="hgi-stroke hgi-pencil-edit-01 text-gold-400"></i> Edit Player Details</h3>
-                <button onclick="closePlayerEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="hgi-stroke hgi-cancel-01 text-sm"></i></button>
+                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-pen text-gold-400"></i> Edit Player Details</h3>
+                <button onclick="closePlayerEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
             <form action="index.php" method="POST" class="space-y-4">
                 <input type="hidden" name="action" value="edit_player">
@@ -534,8 +534,8 @@ try {
     <div id="teamEditModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="max-w-md w-full glass-panel rounded-2xl p-6 border border-gold-500/20 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
-                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="hgi-stroke hgi-pencil-edit-01 text-gold-400"></i> Edit Franchise Team</h3>
-                <button onclick="closeTeamEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="hgi-stroke hgi-cancel-01 text-sm"></i></button>
+                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-pen text-gold-400"></i> Edit Franchise Team</h3>
+                <button onclick="closeTeamEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
             <form action="index.php" method="POST" class="space-y-4">
                 <input type="hidden" name="action" value="edit_team">

@@ -34,7 +34,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <i class="hgi-stroke hgi-microphone-01 text-gold-400 text-lg"></i>
+            <i class="fa-solid fa-microphone text-gold-400 text-lg"></i>
             <div>
                 <h1 class="text-lg font-black uppercase tracking-tight text-white flex items-center gap-2">
                     SMCL Auctioneer Desk <span class="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase animate-pulse">Live</span>
@@ -45,10 +45,10 @@ try {
 
         <div class="flex items-center gap-3">
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-zinc-900 border border-white/5 hover:border-gold-500/30 w-8 h-8 rounded-lg text-xs transition duration-200" title="Toggle Sound Effects">
-                <i id="sound-icon" class="hgi-stroke hgi-volume-max text-sm text-gold-400"></i>
+                <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>
             </button>
             <a href="index.php" class="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-3.5 py-2 rounded-lg transition flex items-center gap-1">
-                <i class="hgi-stroke hgi-arrow-left-01 text-[10px]"></i> Admin Home
+                <i class="fa-solid fa-arrow-left text-[10px]"></i> Admin Home
             </a>
             <!-- Logout -->
             <a href="../public/logout.php" class="text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 hover:bg-red-500/10 px-3 py-2 rounded-lg transition">
@@ -64,7 +64,7 @@ try {
         <!-- LEFT SIDE: Available Players to Bring to Block (4 Cols) -->
         <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col max-h-[580px]">
             <div class="border-b border-white/5 pb-3 mb-4">
-                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="hgi-stroke hgi-cricket-helmet text-gold-400"></i> Available Pool</h3>
+                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-baseball-bat-ball text-gold-400"></i> Available Pool</h3>
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Select and bring player to block</p>
             </div>
 
@@ -83,7 +83,7 @@ try {
                                 </div>
                                 <div>
                                     <div class="font-bold text-white text-xs group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
-                                     <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5"><?php echo $p['role']; ?> | <span class="inline-flex items-center gap-0.5"><i class="hgi-stroke hgi-location-01 text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></span></div>
+                                     <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5"><?php echo $p['role']; ?> | <span class="inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></span></div>
                                 </div>
                             </div>
                             
@@ -110,7 +110,7 @@ try {
             
             <!-- Standby Box -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[450px]">
-                <i class="hgi-stroke hgi-microphone-01 text-6xl text-gold-400 animate-pulse mb-4 block"></i>
+                <i class="fa-solid fa-microphone text-6xl text-gold-400 animate-pulse mb-4 block"></i>
                 <h2 class="text-xl font-extrabold text-gold-400">Live Auction Block Idle</h2>
                 <p class="text-gray-400 max-w-sm mt-2 text-xs">
                     Select a cricket player from the left panel pool, adjust their opening base price if necessary, and click "Block" to commence live franchise bidding.
@@ -129,7 +129,7 @@ try {
                         </span>
                         <h2 class="text-xl font-bold text-white mt-1.5 tracking-tight" id="player-name">---</h2>
                         <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-                            <i class="hgi-stroke hgi-location-01 text-gold-400"></i>
+                            <i class="fa-solid fa-location-dot text-gold-400"></i>
                             <span id="player-place">Hometown</span>
                         </p>
                     </div>
@@ -290,9 +290,9 @@ try {
             isMuted = !isMuted;
             const icon = document.getElementById('sound-icon');
             if (isMuted) {
-                icon.className = "hgi-stroke hgi-volume-mute-01 text-sm text-gray-500";
+                icon.className = "fa-solid fa-volume-xmark text-sm text-gray-500";
             } else {
-                icon.className = "hgi-stroke hgi-volume-max text-sm text-gold-400";
+                icon.className = "fa-solid fa-volume-high text-sm text-gold-400";
             }
             if (!isMuted) {
                 SMCLSoundEngine.init();

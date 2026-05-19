@@ -17,7 +17,7 @@ require_once '../config/db.php';
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between z-10 sticky top-0">
         <!-- Logo -->
         <div class="flex items-center gap-3">
-            <span class="text-xl">🏆</span>
+            <i class="fa-solid fa-trophy text-gold-400 text-lg"></i>
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600">
                     SMCL 2026
@@ -29,7 +29,7 @@ require_once '../config/db.php';
         <!-- Live Auction Status Indicator -->
         <div class="flex items-center gap-4">
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
-                <i id="sound-icon" class="hgi-stroke hgi-volume-max text-sm text-gold-400"></i>
+                <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>
             </button>
 
             <div class="hidden sm:flex items-center gap-2 bg-black/40 border border-white/5 rounded-full px-3 py-1 text-xs">
@@ -58,7 +58,7 @@ require_once '../config/db.php';
             
             <!-- Standard Standby Box (Will show when current_player is NULL) -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[450px]">
-                <i class="hgi-stroke hgi-cricket-helmet text-6xl text-gold-400 animate-bounce mb-4 block"></i>
+                <i class="fa-solid fa-baseball-bat-ball text-6xl text-gold-400 animate-bounce mb-4 block"></i>
                 <h2 class="text-2xl font-extrabold text-gold-400">SMCL Live Auction Desk</h2>
                 <p class="text-gray-400 max-w-md mt-2 text-sm">
                     Welcome to the Shamsu Memorial Cricket League Franchise Auction. Bidding will commence shortly as the Auctioneer brings the next player to the block.
@@ -91,7 +91,7 @@ require_once '../config/db.php';
                         </span>
                         <h2 class="text-2xl font-black text-white mt-2 tracking-tight" id="player-name">---</h2>
                         <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-                            <i class="hgi-stroke hgi-location-01 text-gold-400"></i>
+                            <i class="fa-solid fa-location-dot text-gold-400"></i>
                             <span id="player-place">Wayanad</span>
                         </p>
                     </div>
@@ -119,7 +119,7 @@ require_once '../config/db.php';
                     <div class="mt-4 border-t border-white/5 pt-4">
                         <span class="text-[9px] uppercase tracking-widest font-bold text-gray-500">Leading Franchise</span>
                         <div class="flex items-center gap-3 mt-1.5">
-                            <i class="hgi-stroke hgi-crown text-2xl text-gold-400"></i>
+                            <i class="fa-solid fa-crown text-2xl text-gold-400"></i>
                             <div>
                                 <h3 class="text-base font-extrabold text-white" id="leading-team">---</h3>
                                 <p class="text-[9px] text-gold-500 uppercase tracking-widest font-bold">High Bidholder</p>
@@ -131,7 +131,7 @@ require_once '../config/db.php';
                 <!-- Live Bids History Timeline (5 rows equivalent) -->
                 <div class="row-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
-                        <i class="hgi-stroke hgi-analytics-01 text-xs text-gold-400"></i> Bid Flow History
+                        <i class="fa-solid fa-chart-line text-xs text-gold-400"></i> Bid Flow History
                     </h3>
                     <div class="flex-grow overflow-y-auto pr-1 space-y-2.5 max-h-36" id="bid-history-list">
                         <!-- Polled Bids will append here -->
@@ -145,7 +145,7 @@ require_once '../config/db.php';
         <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
             <div class="border-b border-white/5 pb-3 mb-4">
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-2">
-                    <i class="hgi-stroke hgi-credit-card text-base"></i> Franchise Purses
+                    <i class="fa-solid fa-wallet text-base text-gold-400"></i> Franchise Purses
                 </h3>
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Live Budget & Squad Sizes</p>
             </div>
@@ -163,7 +163,7 @@ require_once '../config/db.php';
             <div class="border-b border-white/5 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="text-base font-black text-gold-400 flex items-center gap-2 uppercase tracking-tight">
-                        <i class="hgi-stroke hgi-clipboard text-base"></i> Completed Player Auctions
+                        <i class="fa-solid fa-clipboard-list text-base text-gold-400"></i> Completed Player Auctions
                     </h3>
                     <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all finalized player auctions</p>
                 </div>
@@ -304,9 +304,9 @@ require_once '../config/db.php';
             isMuted = !isMuted;
             const icon = document.getElementById('sound-icon');
             if (isMuted) {
-                icon.className = "hgi-stroke hgi-volume-mute-01 text-sm text-gray-500";
+                icon.className = "fa-solid fa-volume-xmark text-sm text-gray-500";
             } else {
-                icon.className = "hgi-stroke hgi-volume-max text-sm text-gold-400";
+                icon.className = "fa-solid fa-volume-high text-sm text-gold-400";
             }
             if (!isMuted) {
                 SMCLSoundEngine.init();
