@@ -253,12 +253,12 @@ try {
                                 <?php foreach ($players as $p): ?>
                                     <tr class="hover:bg-white/[0.02] transition">
                                         <!-- Player photo + name -->
-                                        <td class="py-3.5 pr-2 flex items-center gap-3">
+                                        <td class="py-3.5 pr-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition rounded-lg p-2" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                             <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
                                                 <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Profile" class="w-full h-full object-cover">
                                             </div>
                                             <div>
-                                                <div class="font-bold text-white"><?php echo htmlspecialchars($p['name']); ?></div>
+                                                <div class="font-bold text-white group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
                                                 <div class="text-[10px] text-gray-500"><?php echo htmlspecialchars($p['mobile']); ?></div>
                                             </div>
                                         </td>
@@ -626,5 +626,9 @@ try {
         document.getElementById('teamEditModal').classList.add('hidden');
     }
     </script>
+    <?php 
+        $uploadPath = "../public/uploads/";
+        require_once '../public/components/modals.php'; 
+    ?>
 </body>
 </html>

@@ -402,7 +402,8 @@ try {
                     if (myPlayers.length > 0) {
                         myPlayers.forEach(p => {
                             const row = document.createElement('div');
-                            row.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs";
+                            row.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs cursor-pointer hover:bg-white/10 transition group";
+                            row.onclick = () => openPlayerDetailsModal(p.id);
                             row.innerHTML = `
                                 <div class="flex items-center gap-3">
                                     <img src="../public/uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md">
@@ -633,5 +634,9 @@ try {
             }, 3500);
         }
     </script>
+    <?php 
+        $uploadPath = "../public/uploads/";
+        require_once '../public/components/modals.php'; 
+    ?>
 </body>
 </html>

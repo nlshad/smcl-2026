@@ -130,7 +130,7 @@ try {
                 <?php else: ?>
                     <?php foreach ($availablePlayers as $p): ?>
                         <div class="p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition group">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 cursor-pointer" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                 <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
                                     <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Player" class="w-full h-full object-cover">
                                 </div>
@@ -556,5 +556,9 @@ try {
             }, 3500);
         }
     </script>
+    <?php 
+        $uploadPath = "../public/uploads/";
+        require_once '../public/components/modals.php'; 
+    ?>
 </body>
 </html>
