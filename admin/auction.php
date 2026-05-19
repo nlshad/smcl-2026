@@ -148,7 +148,7 @@ try {
                                            class="w-full bg-transparent text-center font-bold text-gold-400 focus:outline-none">
                                 </div>
                                 <button onclick="bringToBlock(<?php echo $p['id']; ?>)"
-                                        class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold text-[9px] uppercase tracking-wider py-2 px-2.5 rounded-lg transition active:scale-95">
+                                        class="block-action-btn bg-gold-500 hover:bg-gold-400 text-black font-extrabold text-[9px] uppercase tracking-wider py-2 px-2.5 rounded-lg transition active:scale-95">
                                     Block
                                 </button>
                             </div>
@@ -366,8 +366,16 @@ try {
                 const playerCard = document.getElementById('player-card');
                 const bidControlCard = document.getElementById('bid-control-card');
                 
+                const blockButtons = document.querySelectorAll('.block-action-btn');
+
                 // Toggle Standby vs Controls
                 if (data.current_player && data.status !== 'Idle') {
+                    blockButtons.forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-30', 'cursor-not-allowed');
+                        btn.classList.remove('hover:bg-gold-400', 'active:scale-95');
+                    });
+
                     standbyBox.classList.add('hidden');
                     playerCard.classList.remove('hidden');
                     bidControlCard.classList.remove('hidden');
@@ -438,6 +446,12 @@ try {
                     }
 
                 } else {
+                    blockButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-30', 'cursor-not-allowed');
+                        btn.classList.add('hover:bg-gold-400', 'active:scale-95');
+                    });
+
                     standbyBox.classList.remove('hidden');
                     playerCard.classList.add('hidden');
                     bidControlCard.classList.add('hidden');
@@ -453,8 +467,13 @@ try {
 
         // Action: Bring a Player to Block
         async function bringToBlock(playerId) {
-            const baseInput = document.getElementById(`base_${playerId}`);
-            const basePrice = parseInt(baseInput.value);
+            if (activePlayerId !== null) {
+                showToast("Finish current auction before blocking another player!", "error");
+                return;
+            }
+
+            const basePriceInput = document.getElementById('base_' + playerId);
+            const basePrice = basePriceInput ? parseInt(basePriceInput.value) : 0;
 
             if (isNaN(basePrice) || basePrice < 50) {
                 showToast("Please set a valid starting base price (minimum ₹50).", "error");
