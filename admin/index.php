@@ -315,7 +315,7 @@ try {
                                         <!-- Player photo + name -->
                                         <td class="py-3.5 pr-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition rounded-lg p-2" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                             <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
-                                                <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                                <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" alt="Profile" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../public/uploads/player_placeholder.jpg';">
                                             </div>
                                             <div>
                                                 <div class="font-bold text-white group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
@@ -465,7 +465,7 @@ try {
                             <?php foreach ($teams as $t): ?>
                                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
                                     <div class="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition duration-200" onclick="openFranchiseDetailsModal(<?php echo $t['id']; ?>)">
-                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm">
+                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm" onerror="this.onerror=null; this.src='../public/uploads/team_placeholder.jpg';">
                                         <div>
                                             <div class="font-bold text-white hover:text-gold-400 transition flex items-center gap-1">
                                                 <?php echo htmlspecialchars($t['team_name']); ?>

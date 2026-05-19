@@ -182,7 +182,7 @@ if (!isset($uploadPath)) {
                     row.onclick = () => { closeTeamModal(); setTimeout(() => openPlayerDetailsModal(p.id), 200); };
                     row.innerHTML = `
                         <div class="flex items-center gap-3">
-                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md">
+                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                             <div>
                                 <span class="text-white font-extrabold block group-hover:text-gold-400">${p.name}</span>
                                 <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
@@ -237,7 +237,7 @@ if (!isset($uploadPath)) {
             <div class="flex flex-col sm:flex-row items-center justify-between gap-5 pb-5 border-b border-white/5">
                 <div class="flex flex-col sm:flex-row items-center gap-5">
                     <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md">
-                        <img src="" id="modal-player-image" class="w-full h-full object-cover">
+                        <img src="" id="modal-player-image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                     </div>
                     <div class="text-center sm:text-left space-y-1.5">
                         <span class="px-2 py-0.5 rounded text-[7px] uppercase tracking-wider font-extrabold" id="modal-player-status-tag">Status</span>
@@ -247,7 +247,7 @@ if (!isset($uploadPath)) {
                 </div>
                 <!-- Franchise Logo for Sold Players -->
                 <div id="modal-player-team-logo-container" class="w-16 h-16 rounded bg-black/40 border border-gold-500/20 flex items-center justify-center p-1 overflow-hidden" style="display: none;">
-                    <img src="" id="modal-player-team-logo" class="max-w-full max-h-full object-contain rounded">
+                    <img src="" id="modal-player-team-logo" class="max-w-full max-h-full object-contain rounded" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>team_placeholder.jpg';">
                 </div>
             </div>
 
@@ -301,7 +301,7 @@ if (!isset($uploadPath)) {
             <!-- Team Banner Info -->
             <div class="flex flex-col sm:flex-row items-center gap-5 pb-5 border-b border-white/5">
                 <div class="w-20 h-20 rounded-xl overflow-hidden border border-gold-500/30 bg-white shadow-md p-1 flex items-center justify-center">
-                    <img src="" id="modal-team-logo" class="max-w-full max-h-full object-contain rounded">
+                    <img src="" id="modal-team-logo" class="max-w-full max-h-full object-contain rounded" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>team_placeholder.jpg';">
                 </div>
                 <div class="text-center sm:text-left flex-grow space-y-1.5">
                     <h4 class="text-xl font-black text-white tracking-tight uppercase" id="modal-team-title">Team Name</h4>

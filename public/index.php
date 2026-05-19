@@ -95,7 +95,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 <!-- Profile Image -->
                 <div class="p-5 flex-grow flex flex-col items-center justify-center">
                     <div class="w-36 h-40 rounded-xl overflow-hidden border-2 border-gold-500/30 bg-black/60 shadow-lg relative flex items-center justify-center">
-                        <img src="uploads/player_placeholder.jpg" id="player-image" alt="Player Image" class="w-full h-full object-cover">
+                        <img src="uploads/player_placeholder.jpg" id="player-image" alt="Player Image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='uploads/player_placeholder.jpg';">
                         <div class="absolute top-2 right-2 bg-black/70 px-2 py-0.5 rounded text-[8px] border border-white/10 uppercase tracking-wider text-gold-400" id="player-status-tag">
                             Bidding
                         </div>
@@ -576,7 +576,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                             <div class="flex items-center gap-3.5">
                                 <!-- Player Profile Picture -->
                                 <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md">
-                                    <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover">
+                                    <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='uploads/player_placeholder.jpg';">
                                 </div>
                                 <!-- Name & Details -->
                                 <div>
