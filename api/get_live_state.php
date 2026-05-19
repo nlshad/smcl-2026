@@ -63,6 +63,15 @@ try {
     $stmt->execute();
     $teams = $stmt->fetchAll();
 
+    // 4. Fetch completed players (Sold & Unsold) sorted by recent updates
+    $stmt = $pdo->prepare("SELECT p.id, p.name, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
+                           FROM players p 
+                           LEFT JOIN teams t ON p.team_id = t.id 
+                           WHERE p.auction_status IN ('Sold', 'Unsold') 
+                           ORDER BY p.id DESC");
+    $stmt->execute();
+    $completedPlayers = $stmt->fetchAll();
+
     echo json_encode([
         'status' => $state['status'],
         'current_player_id' => $state['current_player_id'] ? (int)$state['current_player_id'] : null,
@@ -71,7 +80,8 @@ try {
         'leading_team_name' => $leadingTeamName,
         'leading_team_id' => $leadingTeamId,
         'bid_history' => $bidHistory,
-        'teams' => $teams
+        'teams' => $teams,
+        'completed_players' => $completedPlayers
     ]);
 
 } catch (Exception $e) {

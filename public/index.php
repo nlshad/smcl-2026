@@ -218,6 +218,39 @@ require_once '../config/db.php';
             </div>
         </aside>
 
+        <!-- COMPLETED PLAYERS SECTION -->
+        <section class="col-span-12 glass-panel rounded-2xl p-6 border border-gold-500/10 mt-2 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(212,163,12,0.02)_0%,transparent_70%)] pointer-events-none"></div>
+            
+            <div class="border-b border-white/5 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-black text-gold-400 flex items-center gap-2 uppercase tracking-tight">
+                        <span>📋</span> Completed Player Auctions
+                    </h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all finalized player auctions</p>
+                </div>
+                <!-- Quick Filter / Summary Counters -->
+                <div class="flex items-center gap-2.5 text-[10px]">
+                    <span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg font-bold">
+                        Sold: <strong class="text-white text-xs font-black" id="count-sold">0</strong>
+                    </span>
+                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-lg font-bold">
+                        Unsold: <strong class="text-white text-xs font-black" id="count-unsold">0</strong>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Completed Players Grid (Adaptive cols) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="completed-players-grid">
+                <!-- Dynamically populated completed cards -->
+            </div>
+            
+            <!-- Standby Empty state inside completed table -->
+            <div id="completed-empty-box" class="text-center text-[10px] text-gray-500 py-10 uppercase tracking-widest font-bold hidden">
+                No finalized auctions yet. Bids are ongoing!
+            </div>
+        </section>
+
     </main>
 
     <!-- Footer Area -->
@@ -498,6 +531,83 @@ require_once '../config/db.php';
                         </div>
                     `;
                 }
+
+                // 4. Sync Completed Player Auctions
+                const completedGrid = document.getElementById('completed-players-grid');
+                const completedEmpty = document.getElementById('completed-empty-box');
+                const countSoldEl = document.getElementById('count-sold');
+                const countUnsoldEl = document.getElementById('count-unsold');
+
+                completedGrid.innerHTML = '';
+
+                let soldCount = 0;
+                let unsoldCount = 0;
+
+                if (data.completed_players && data.completed_players.length > 0) {
+                    completedEmpty.classList.add('hidden');
+                    completedGrid.classList.remove('hidden');
+
+                    data.completed_players.forEach(p => {
+                        if (p.auction_status === 'Sold') soldCount++;
+                        if (p.auction_status === 'Unsold') unsoldCount++;
+
+                        const card = document.createElement('div');
+                        card.className = "glass-panel rounded-2xl p-5 border border-gold-500/10 hover:border-gold-500/20 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden shadow-lg shadow-black/40";
+                        
+                        card.innerHTML = `
+                            <!-- Top Info Row -->
+                            <div class="flex items-center justify-between pb-4 border-b border-white/5">
+                                <div class="flex items-center gap-3.5">
+                                    <!-- Player Profile Picture -->
+                                    <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md">
+                                        <img src="uploads/${p.profile_image}" alt="${p.name}" class="w-full h-full object-cover">
+                                    </div>
+                                    <!-- Name & Details -->
+                                    <div>
+                                        <h4 class="text-sm font-extrabold text-white group-hover:text-gold-400 transition-colors">${p.name}</h4>
+                                        <p class="text-[9px] text-gray-400 mt-0.5">${p.role} &bull; ${p.place}</p>
+                                    </div>
+                                </div>
+                                <!-- Pill Badge -->
+                                <span class="px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold ${
+                                    p.auction_status === 'Sold' 
+                                        ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' 
+                                        : 'bg-red-500/10 border border-red-500/25 text-red-400'
+                                }">
+                                    ${p.auction_status}
+                                </span>
+                            </div>
+
+                            <!-- Bottom Price and Team Grid -->
+                            <div class="grid grid-cols-3 gap-2 pt-3.5 text-center items-center">
+                                <!-- Base Price -->
+                                <div class="border-r border-white/5 flex flex-col">
+                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Base Price</span>
+                                    <span class="text-xs font-black text-gray-200 mt-1 font-mono">₹${p.base_price}</span>
+                                </div>
+                                <!-- Final Price -->
+                                <div class="border-r border-white/5 flex flex-col">
+                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Final Price</span>
+                                    <span class="text-xs font-black text-gold-400 mt-1 font-mono">${p.auction_status === 'Sold' ? '₹' + p.sold_price : '—'}</span>
+                                </div>
+                                <!-- Team -->
+                                <div class="flex flex-col items-center justify-center">
+                                    <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
+                                    ${p.auction_status === 'Sold' 
+                                        ? `<span class="text-xs font-extrabold text-white tracking-tight mt-1 truncate max-w-[80px]">${p.team_name}</span>` 
+                                        : '<span class="text-xs font-bold text-gray-600 mt-1">—</span>'
+                                    }
+                                </div>
+                            </div>
+                        `;
+                        completedGrid.appendChild(card);
+                    });
+                } else {
+                    completedEmpty.classList.remove('hidden');
+                }
+
+                countSoldEl.innerText = soldCount;
+                countUnsoldEl.innerText = unsoldCount;
 
             } catch (error) {
                 console.error("Dashboard synchronization error:", error);
