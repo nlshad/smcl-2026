@@ -108,8 +108,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (empty($name) || empty($mobile) || empty($place) || empty($utr)) {
                 $errorMsg = "❌ All player edit fields are required.";
             } else {
-                $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ?, team_id = ?, auction_status = ?, sold_price = ? WHERE id = ?");
-                $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $teamId, $auctionStatus, $soldPrice, $playerId]);
+                // Optional profile image upload handling
+                $uploadedImage = false;
+                if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+                    $fileTmpPath = $_FILES['profile_image']['tmp_name'];
+                    $fileName = $_FILES['profile_image']['name'];
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    
+                    if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
+                        $newFileName = uniqid('player_', true) . '.' . $fileExtension;
+                        $uploadFileDir = '../public/uploads/';
+                        $dest_path = $uploadFileDir . $newFileName;
+                        
+                        if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                            $uploadedImage = $newFileName;
+                        }
+                    }
+                }
+
+                if ($uploadedImage !== false) {
+                    $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ?, team_id = ?, auction_status = ?, sold_price = ?, profile_image = ? WHERE id = ?");
+                    $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $teamId, $auctionStatus, $soldPrice, $uploadedImage, $playerId]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ?, team_id = ?, auction_status = ?, sold_price = ? WHERE id = ?");
+                    $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $teamId, $auctionStatus, $soldPrice, $playerId]);
+                }
                 
                 // CRITICAL AUTO-RECALCULATION: 
                 // Instantly sync all franchise purses and squad sizes based on the new reality of the players table!
@@ -545,7 +568,7 @@ try {
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-pen text-gold-400"></i> Edit Player Details</h3>
                 <button onclick="closePlayerEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
-            <form action="index.php" method="POST" class="space-y-4">
+            <form action="index.php" method="POST" enctype="multipart/form-data" class="space-y-4">
                 <input type="hidden" name="action" value="edit_player">
                 <input type="hidden" name="player_id" id="edit_player_id">
 
@@ -639,6 +662,13 @@ try {
                         <option value="Verified">Verified</option>
                         <option value="Rejected">Rejected</option>
                     </select>
+                </div>
+
+                <!-- Profile Photo -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Update Profile Image (Optional)</label>
+                    <input type="file" name="profile_image" accept="image/*"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-gold-500/10 file:text-gold-400 hover:file:bg-gold-500/20 file:cursor-pointer">
                 </div>
 
                 <!-- Buttons -->
