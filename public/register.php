@@ -120,6 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -141,8 +142,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Top Banner -->
         <div class="bg-gradient-to-r from-gold-950 via-black to-gold-950 p-6 border-b border-gold-500/20 text-center relative">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(218,165,32,0.15)_0%,transparent_70%)] pointer-events-none"></div>
-            <a href="index.php" class="text-xs uppercase tracking-widest text-gold-400 hover:text-gold-300 font-semibold mb-2 inline-block transition">
-                ← Back to Live Dashboard
+            <a href="index.php" class="text-xs uppercase tracking-widest text-gold-400 hover:text-gold-300 font-semibold mb-2 inline-flex items-center gap-1.5 transition">
+                <i class="hgi-stroke hgi-arrow-left-01 text-[10px]"></i> Back to Live Dashboard
             </a>
             <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gold-300 to-amber-500 mt-1">
                 SHAMSU MEMORIAL CRICKET LEAGUE
@@ -153,14 +154,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Feedback Messages -->
         <?php if (!empty($successMsg)): ?>
             <div class="mx-6 mt-6 bg-gold-950/20 border border-gold-500/40 text-gold-300 px-5 py-4 rounded-xl text-sm flex items-center gap-3">
-                <span class="text-lg">✔️</span>
+                <i class="hgi-stroke hgi-checkmark-circle-01 text-emerald-400 text-lg"></i>
                 <div><?php echo $successMsg; ?></div>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($errorMsg)): ?>
             <div class="mx-6 mt-6 bg-red-950/20 border border-red-500/40 text-red-300 px-5 py-4 rounded-xl text-sm flex items-center gap-3">
-                <span class="text-lg">🚨</span>
+                <i class="hgi-stroke hgi-alert-circle text-red-400 text-lg"></i>
                 <div><?php echo $errorMsg; ?></div>
             </div>
         <?php endif; ?>
@@ -170,8 +171,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <!-- Left Side: Data Entry Form (7 cols) -->
             <div class="md:col-span-7 space-y-6">
-                <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2">
-                    🏏 Player Details
+                <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2 flex items-center gap-2">
+                    <i class="hgi-stroke hgi-cricket-helmet text-gold-400 text-lg"></i> Player Details
                 </h3>
 
                 <!-- Name Input -->
@@ -218,12 +219,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="file" name="profile_image" id="profile_image" required accept="image/*"
                                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                         <div class="space-y-1" id="upload-prompt">
-                            <span class="text-2xl text-gold-400 inline-block">📸</span>
+                            <i class="hgi-stroke hgi-camera-01 text-gold-400 text-2xl block mx-auto"></i>
                             <p class="text-xs text-gray-300 font-semibold">Click to upload or drag & drop</p>
                             <p class="text-[10px] text-gray-500">MIME validation will enforce real image files only.</p>
                         </div>
-                        <div class="hidden space-y-1 text-gold-400 font-medium text-xs" id="upload-feedback">
-                            <span class="text-xl">🌟</span>
+                        <div class="hidden space-y-1 text-gold-400 font-medium text-xs animate-pulse" id="upload-feedback">
+                            <i class="hgi-stroke hgi-star text-gold-400 text-xl block mx-auto"></i>
                             <p id="file-name-display"></p>
                         </div>
                     </div>
@@ -233,8 +234,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Right Side: UPI Payment & QR Code (5 cols) -->
             <div class="md:col-span-5 bg-black/40 rounded-xl p-6 border border-white/5 flex flex-col justify-between">
                 <div class="space-y-4">
-                    <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2">
-                        💳 Payment Verification
+                    <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2 flex items-center gap-2">
+                        <i class="hgi-stroke hgi-credit-card text-gold-400 text-lg"></i> Payment Verification
                     </h3>
                     <p class="text-xs text-gray-400 leading-relaxed">
                         To join the SMCL 2026 Auction pool, pay a registration fee of <strong class="text-gold-300 font-bold">₹250</strong>. Scan the QR code using any UPI app (GPAY, PhonePe, Paytm).

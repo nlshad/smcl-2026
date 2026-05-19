@@ -25,7 +25,7 @@ if (!isset($uploadPath)) {
             // Set profile info
             document.getElementById('modal-player-image').src = p.profile_image ? "<?php echo $uploadPath; ?>" + p.profile_image : "<?php echo $uploadPath; ?>player_placeholder.jpg";
             document.getElementById('modal-player-name').innerText = p.name;
-            document.getElementById('modal-player-details').innerHTML = `${p.role.toUpperCase()} &bull; 📍 ${p.place}`;
+            document.getElementById('modal-player-details').innerHTML = `${p.role.toUpperCase()} &bull; <i class="hgi-stroke hgi-location-01 text-gold-400 text-[10px] inline-block align-middle mr-0.5"></i> ${p.place}`;
             document.getElementById('modal-base-price').innerText = "₹" + p.base_price;
             
             const statusTag = document.getElementById('modal-player-status-tag');
@@ -187,10 +187,10 @@ if (!isset($uploadPath)) {
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/40">
             <h3 class="text-sm font-black text-gold-400 uppercase tracking-tight flex items-center gap-2">
-                <span>🏏</span> Player Auction Summary
+                <i class="hgi-stroke hgi-cricket-helmet text-base"></i> Player Auction Summary
             </h3>
-            <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center text-sm transition">
-                ✕
+            <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center transition">
+                <i class="hgi-stroke hgi-cancel-01 text-sm"></i>
             </button>
         </div>
 
@@ -228,7 +228,7 @@ if (!isset($uploadPath)) {
             <!-- Bid History Section -->
             <div id="modal-bid-history-section" class="space-y-3">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-2">
-                    <span>📊</span> Complete Bidding Timeline
+                    <i class="hgi-stroke hgi-analytics-01 text-xs text-gold-400"></i> Complete Bidding Timeline
                 </h5>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="modal-bid-history-list">
                     <!-- populated dynamically -->
@@ -245,10 +245,10 @@ if (!isset($uploadPath)) {
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/40">
             <h3 class="text-sm font-black text-gold-400 uppercase tracking-tight flex items-center gap-2">
-                <span>👑</span> Franchise HQ Profile
+                <i class="hgi-stroke hgi-crown text-base"></i> Franchise HQ Profile
             </h3>
-            <button onclick="closeTeamModal()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center text-sm transition">
-                ✕
+            <button onclick="closeTeamModal()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center transition">
+                <i class="hgi-stroke hgi-cancel-01 text-sm"></i>
             </button>
         </div>
 
@@ -289,7 +289,7 @@ if (!isset($uploadPath)) {
             <!-- Purchased Players List -->
             <div class="space-y-3">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-2">
-                    <span>🏏</span> Franchise Roster
+                    <i class="hgi-stroke hgi-cricket-helmet text-xs text-gold-400"></i> Franchise Roster
                 </h5>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="modal-team-players-list">
                     <!-- populated dynamically -->

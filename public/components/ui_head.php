@@ -16,6 +16,12 @@
                         700: '#7e5a07',
                         800: '#533c07',
                         900: '#2b1f03',
+                    },
+                    cyber: {
+                        cyan: '#00f0ff',
+                        purple: '#bd00ff',
+                        pink: '#ff0055',
+                        green: '#39ff14'
                     }
                 }
             }
@@ -23,6 +29,7 @@
     }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css" />
 <style>
     body {
         font-family: 'Inter', sans-serif;

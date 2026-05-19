@@ -56,7 +56,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <span class="text-xl">💼</span>
+            <i class="hgi-stroke hgi-briefcase-01 text-gold-400 text-lg"></i>
             <div>
                 <h1 class="text-lg font-black uppercase tracking-tight text-white">
                     <?php echo htmlspecialchars($team['team_name']); ?>
@@ -68,7 +68,7 @@ try {
         <div class="flex items-center gap-4">
             <!-- Sound Toggle -->
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
-                <span id="sound-icon">🔊</span>
+                <i id="sound-icon" class="hgi-stroke hgi-volume-max text-sm text-gold-400"></i>
             </button>
 
             <!-- Active Bidding Indicator -->
@@ -112,7 +112,7 @@ try {
                             <?php echo $team['current_squad_size']; ?> / <?php echo $team['max_squad_size']; ?>
                         </h3>
                     </div>
-                    <span class="text-3xl">👥</span>
+                    <i class="hgi-stroke hgi-user-group text-3xl text-gold-400"></i>
                 </div>
                 <!-- Dynamic Player List Container -->
                 <div class="flex-grow overflow-y-auto space-y-2 pr-1" id="manager-squad-list">
@@ -128,7 +128,7 @@ try {
             
             <!-- Standby Box -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[380px]">
-                <span class="text-5xl animate-pulse mb-3">📡</span>
+                <i class="hgi-stroke hgi-transmission text-5xl text-gold-400 animate-pulse mb-3 block"></i>
                 <h2 class="text-xl font-extrabold text-gold-400">Waiting for Live Auctioneer</h2>
                 <p class="text-gray-400 max-w-sm mt-2 text-xs">
                     Please stand by. When the Super Admin opens bidding for a player, this panel will unlock instantly, presenting your quick-bidding controls.
@@ -146,7 +146,10 @@ try {
                             ROLE
                         </span>
                         <h2 class="text-xl font-bold text-white mt-1.5 tracking-tight" id="player-name">Player Name</h2>
-                        <p class="text-xs text-gray-400" id="player-place">📍 Wayanad</p>
+                        <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
+                            <i class="hgi-stroke hgi-location-01 text-gold-400"></i>
+                            <span id="player-place">Wayanad</span>
+                        </p>
                     </div>
                 </div>
                 <div class="border-t border-white/5 pt-3 mt-4 flex justify-between items-center text-xs">
@@ -298,7 +301,12 @@ try {
 
         function toggleMute() {
             isMuted = !isMuted;
-            document.getElementById('sound-icon').innerText = isMuted ? '🔇' : '🔊';
+            const icon = document.getElementById('sound-icon');
+            if (isMuted) {
+                icon.className = "hgi-stroke hgi-volume-mute-01 text-sm text-gray-500";
+            } else {
+                icon.className = "hgi-stroke hgi-volume-max text-sm text-gold-400";
+            }
             if (!isMuted) {
                 SMCLSoundEngine.init();
             }
@@ -398,7 +406,7 @@ try {
                     // Update player info
                     document.getElementById('player-name').innerText = data.current_player.name;
                     document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
-                    document.getElementById('player-place').innerText = "📍 " + data.current_player.place;
+                    document.getElementById('player-place').innerText = data.current_player.place;
                     document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
                     document.getElementById('player-image').src = "../public/uploads/" + data.current_player.profile_image;
 

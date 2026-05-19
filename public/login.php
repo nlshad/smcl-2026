@@ -98,6 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -120,8 +121,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <!-- Tournament Emblem / Header -->
         <div class="text-center mb-8 relative">
-            <a href="index.php" class="text-xs uppercase tracking-widest text-gold-500 hover:text-gold-300 font-semibold mb-2 inline-block transition">
-                ← Enter Spectator Room
+            <a href="index.php" class="text-xs uppercase tracking-widest text-gold-500 hover:text-gold-300 font-semibold mb-2 inline-flex items-center gap-1.5 transition">
+                <i class="hgi-stroke hgi-arrow-left-01 text-[10px]"></i> Enter Spectator Room
             </a>
             <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600 mt-2">
                 SMCL PORTAL
@@ -132,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Error Feedback -->
         <?php if (!empty($errorMsg)): ?>
             <div class="bg-red-950/20 border border-red-500/40 text-red-300 text-xs px-4 py-3 rounded-xl mb-6 font-medium flex items-center gap-2">
-                <span>🚨</span>
+                <i class="hgi-stroke hgi-alert-circle text-red-400 text-sm"></i>
                 <div><?php echo $errorMsg; ?></div>
             </div>
         <?php endif; ?>
@@ -161,7 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-white/10 bg-black/30 hover:bg-gold-950/10 hover:border-gold-500/30 cursor-pointer transition group">
                         <input type="radio" name="role" value="manager" checked class="sr-only peer">
                         <div class="text-center peer-checked:text-gold-400 transition">
-                            <span class="text-lg block group-hover:scale-110 transition duration-200">💼</span>
+                            <i class="hgi-stroke hgi-briefcase-01 text-gold-400 text-lg block group-hover:scale-110 transition duration-200 mx-auto"></i>
                             <span class="text-xs font-bold uppercase tracking-wider mt-1 block">Team Manager</span>
                         </div>
                         <div class="absolute inset-0 border border-gold-500 rounded-xl opacity-0 peer-checked:opacity-100 transition pointer-events-none"></div>
@@ -171,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-white/10 bg-black/30 hover:bg-gold-950/10 hover:border-gold-500/30 cursor-pointer transition group">
                         <input type="radio" name="role" value="admin" class="sr-only peer">
                         <div class="text-center peer-checked:text-gold-400 transition">
-                            <span class="text-lg block group-hover:scale-110 transition duration-200">👑</span>
+                            <i class="hgi-stroke hgi-crown text-gold-400 text-lg block group-hover:scale-110 transition duration-200 mx-auto"></i>
                             <span class="text-xs font-bold uppercase tracking-wider mt-1 block">Super Admin</span>
                         </div>
                         <div class="absolute inset-0 border border-gold-500 rounded-xl opacity-0 peer-checked:opacity-100 transition pointer-events-none"></div>
