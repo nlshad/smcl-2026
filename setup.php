@@ -129,7 +129,7 @@ try {
     
     // Seed Admin (Upsert secure password dynamically)
     $adminUser = 'admin';
-    $rawAdminPass = 'SMCL@Admin#2026';
+    $rawAdminPass = 'SMCL@Admin#2026_Secure';
     $adminPass = password_hash($rawAdminPass, PASSWORD_BCRYPT);
     $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
     $stmt->execute([$adminUser]);
