@@ -95,6 +95,10 @@ try {
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- Sound Toggle -->
+            <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-zinc-900 border border-white/5 hover:border-gold-500/30 w-8 h-8 rounded-lg text-xs transition duration-200" title="Toggle Sound Effects">
+                <span id="sound-icon">🔊</span>
+            </button>
             <!-- Back to Manager Panel -->
             <a href="index.php" class="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-3.5 py-2 rounded-lg transition flex items-center gap-1">
                 ← Admin Home
@@ -245,6 +249,104 @@ try {
     <script>
         let activePlayerId = null;
         let lastBiddingStatus = 'Idle';
+        let lastBidAmount = 0;
+        let isMuted = false;
+
+        // Premium Sound Engine (Zero-latency Web Audio API Synth)
+        const SMCLSoundEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playBid() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(480, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+                    gain.gain.setValueAtTime(0.45, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } catch(e) {}
+            },
+            playSold() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    for (let i = 0; i < 2; i++) {
+                        const time = now + i * 0.14;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(580, time);
+                        osc.frequency.exponentialRampToValueAtTime(90, time + 0.14);
+                        gain.gain.setValueAtTime(0.55, time);
+                        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+                        osc.start(time);
+                        osc.stop(time + 0.14);
+                    }
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const time = now + 0.28 + idx * 0.08;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, time);
+                        gain.gain.setValueAtTime(0.12, time);
+                        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.85);
+                        osc.start(time);
+                        osc.stop(time + 0.85);
+                    });
+                } catch(e) {}
+            },
+            playUnsold() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(260, now);
+                    osc.frequency.linearRampToValueAtTime(60, now + 0.75);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+                    osc.start(now);
+                    osc.stop(now + 0.75);
+                } catch(e) {}
+            }
+        };
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('sound-icon').innerText = isMuted ? '🔇' : '🔊';
+            if (!isMuted) {
+                SMCLSoundEngine.init();
+            }
+        }
+
+        document.addEventListener('click', () => {
+            SMCLSoundEngine.init();
+        }, { once: true });
 
         // Polling loop
         fetchAuctioneerState();
@@ -270,7 +372,7 @@ try {
                     playerCard.classList.remove('hidden');
                     bidControlCard.classList.remove('hidden');
 
-                    activePlayerId = parseInt(data.current_player.id);
+                    const newPlayerId = parseInt(data.current_player.id);
                     lastBiddingStatus = data.status;
 
                     // Update player details
@@ -285,6 +387,17 @@ try {
                     document.getElementById('leading-team').innerText = data.leading_team_name 
                         ? `Held by: ${data.leading_team_name}` 
                         : "Waiting for opening bid...";
+
+                    // Sync Bid changes & play bid sound
+                    if (activePlayerId !== newPlayerId) {
+                        activePlayerId = newPlayerId;
+                        lastBidAmount = data.highest_bid;
+                    } else {
+                        if (lastBidAmount !== 0 && data.highest_bid > lastBidAmount) {
+                            SMCLSoundEngine.playBid();
+                        }
+                        lastBidAmount = data.highest_bid;
+                    }
 
                     // Sync Auctioneer Status indicator
                     const stLight = document.getElementById('auctioneer-status-light');
@@ -330,6 +443,7 @@ try {
                     bidControlCard.classList.add('hidden');
                     activePlayerId = null;
                     lastBiddingStatus = 'Idle';
+                    lastBidAmount = 0;
                 }
 
             } catch (error) {
@@ -386,12 +500,19 @@ try {
                 if (result.success) {
                     showToast(result.message || "Action processed successfully!", "success");
                     
+                    // Trigger sound instantly for quick UI feedback
+                    if (actionName === 'sold') {
+                        SMCLSoundEngine.playSold();
+                    } else if (actionName === 'unsold') {
+                        SMCLSoundEngine.playUnsold();
+                    }
+                    
                     // If player is sold or marked unsold, trigger full page reload on available list 
                     // to dynamically remove the player from the left panel pool immediately
                     if (actionName === 'sold' || actionName === 'unsold') {
                         setTimeout(() => {
                             window.location.reload();
-                        }, 800);
+                        }, 850);
                     } else {
                         fetchAuctioneerState();
                     }

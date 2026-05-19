@@ -92,8 +92,13 @@ require_once '../config/db.php';
 
         <!-- Live Auction Status Indicator -->
         <div class="flex items-center gap-4">
+            <!-- Premium Sound Toggle -->
+            <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
+                <span id="sound-icon">🔊</span>
+            </button>
+
             <div class="hidden sm:flex items-center gap-2 bg-black/40 border border-white/5 rounded-full px-3 py-1 text-xs">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse live-dot" id="status-light"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse live-dot" id="status-light"></span>
                 <span class="text-gray-400 font-semibold tracking-wider uppercase text-[10px]" id="status-text">Live Arena</span>
             </div>
 
@@ -220,11 +225,122 @@ require_once '../config/db.php';
         <p>© 2026 Shamsu Memorial Cricket League (SMCL). Built for premium turf events.</p>
     </footer>
 
-    <!-- Frontend Polling Controller -->
     <script>
         // Track the current bidding state parameters locally to detect changes
         let activePlayerId = null;
         let lastBidAmount = 0;
+        let isMuted = false;
+
+        // Premium Sound Engine (Zero-latency Web Audio API Synth)
+        const SMCLSoundEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playBid() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    
+                    // Satisfaction gavel-click knock sound
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(480, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+                    
+                    gain.gain.setValueAtTime(0.45, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } catch(e) {}
+            },
+            playSold() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    
+                    // Double Gavel Strike
+                    for (let i = 0; i < 2; i++) {
+                        const time = now + i * 0.14;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(580, time);
+                        osc.frequency.exponentialRampToValueAtTime(90, time + 0.14);
+                        gain.gain.setValueAtTime(0.55, time);
+                        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+                        osc.start(time);
+                        osc.stop(time + 0.14);
+                    }
+                    
+                    // Premium Gold Major Celebration Arpeggio (C5 -> E5 -> G5 -> C6)
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const time = now + 0.28 + idx * 0.08;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, time);
+                        gain.gain.setValueAtTime(0.12, time);
+                        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.85);
+                        osc.start(time);
+                        osc.stop(time + 0.85);
+                    });
+                } catch(e) {}
+            },
+            playUnsold() {
+                if (isMuted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    
+                    // Sad downward slide tone
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(260, now);
+                    osc.frequency.linearRampToValueAtTime(60, now + 0.75);
+                    
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.75);
+                } catch(e) {}
+            }
+        };
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('sound-icon').innerText = isMuted ? '🔇' : '🔊';
+            if (!isMuted) {
+                SMCLSoundEngine.init();
+            }
+        }
+
+        // Initialize audio engine on first click anywhere (bypasses browser autoplay limits)
+        document.addEventListener('click', () => {
+            SMCLSoundEngine.init();
+        }, { once: true });
 
         // Fetch live state immediately on load and then every 1.5 seconds (1500ms)
         fetchState();
@@ -270,6 +386,8 @@ require_once '../config/db.php';
                     playerCard.classList.remove('hidden');
                     bidCard.classList.remove('hidden');
 
+                    const newPlayerId = parseInt(data.current_player.id);
+
                     // Sync Player details
                     document.getElementById('player-name').innerText = data.current_player.name;
                     document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
@@ -287,14 +405,20 @@ require_once '../config/db.php';
                     const bidText = document.getElementById('current-bid');
                     bidText.innerText = "₹" + data.highest_bid;
 
-                    // Micro-animation flash if bid changes
-                    if (lastBidAmount !== 0 && data.highest_bid > lastBidAmount) {
-                        bidText.classList.add('scale-105', 'text-yellow-300');
-                        setTimeout(() => {
-                            bidText.classList.remove('scale-105', 'text-yellow-300');
-                        }, 400);
+                    // Micro-animation flash if bid changes & play Sound!
+                    if (activePlayerId !== newPlayerId) {
+                        activePlayerId = newPlayerId;
+                        lastBidAmount = data.highest_bid;
+                    } else {
+                        if (lastBidAmount !== 0 && data.highest_bid > lastBidAmount) {
+                            bidText.classList.add('scale-105', 'text-yellow-300');
+                            setTimeout(() => {
+                                bidText.classList.remove('scale-105', 'text-yellow-300');
+                            }, 400);
+                            SMCLSoundEngine.playBid();
+                        }
+                        lastBidAmount = data.highest_bid;
                     }
-                    lastBidAmount = data.highest_bid;
 
                     document.getElementById('leading-team').innerText = data.leading_team_name || "No bids placed yet";
 
@@ -324,10 +448,17 @@ require_once '../config/db.php';
                     }
 
                 } else {
+                    // Player has transitioned off the block!
+                    if (activePlayerId !== null) {
+                        const oldPlayerId = activePlayerId;
+                        activePlayerId = null;
+                        lastBidAmount = 0;
+                        checkPastPlayerStatus(oldPlayerId);
+                    }
+
                     standbyBox.classList.remove('hidden');
                     playerCard.classList.add('hidden');
                     bidCard.classList.add('hidden');
-                    lastBidAmount = 0;
                 }
 
                 // 3. Sync Leaderboards Standings
@@ -370,6 +501,23 @@ require_once '../config/db.php';
 
             } catch (error) {
                 console.error("Dashboard synchronization error:", error);
+            }
+        }
+
+        // Fetch whether player was sold or unsold to trigger exact sound
+        async function checkPastPlayerStatus(playerId) {
+            try {
+                const response = await fetch(`../api/get_player_status.php?player_id=${playerId}`);
+                const res = await response.json();
+                if (res.success) {
+                    if (res.auction_status === 'Sold') {
+                        SMCLSoundEngine.playSold();
+                    } else if (res.auction_status === 'Unsold') {
+                        SMCLSoundEngine.playUnsold();
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to lookup past player status:", e);
             }
         }
     </script>
