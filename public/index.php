@@ -552,7 +552,8 @@ require_once '../config/db.php';
                         if (p.auction_status === 'Unsold') unsoldCount++;
 
                         const card = document.createElement('div');
-                        card.className = "glass-panel rounded-2xl p-5 border border-gold-500/10 hover:border-gold-500/20 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden shadow-lg shadow-black/40";
+                        card.className = "glass-panel rounded-2xl p-5 border border-gold-500/10 hover:border-gold-500/20 cursor-pointer transition-all duration-300 relative group flex flex-col justify-between overflow-hidden shadow-lg shadow-black/40";
+                        card.onclick = () => openPlayerDetailsModal(p.id);
                         
                         card.innerHTML = `
                             <!-- Top Info Row -->
@@ -560,7 +561,7 @@ require_once '../config/db.php';
                                 <div class="flex items-center gap-3.5">
                                     <!-- Player Profile Picture -->
                                     <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md">
-                                        <img src="uploads/${p.profile_image}" alt="${p.name}" class="w-full h-full object-cover">
+                                        <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover">
                                     </div>
                                     <!-- Name & Details -->
                                     <div>
@@ -630,6 +631,150 @@ require_once '../config/db.php';
                 console.error("Failed to lookup past player status:", e);
             }
         }
+
+        // Open details modal popup
+        async function openPlayerDetailsModal(playerId) {
+            const modal = document.getElementById('player-details-modal');
+            const content = document.getElementById('modal-content');
+            
+            try {
+                const response = await fetch(`../api/get_player_details.php?player_id=${playerId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error(data.error);
+                    return;
+                }
+
+                const p = data.player;
+                
+                // Set profile info
+                document.getElementById('modal-player-image').src = p.profile_image ? "uploads/" + p.profile_image : "uploads/player_placeholder.jpg";
+                document.getElementById('modal-player-name').innerText = p.name;
+                document.getElementById('modal-player-details').innerHTML = `${p.role.toUpperCase()} &bull; 📍 ${p.place}`;
+                document.getElementById('modal-base-price').innerText = "₹" + p.base_price;
+                
+                const statusTag = document.getElementById('modal-player-status-tag');
+                statusTag.innerText = p.auction_status;
+                
+                if (p.auction_status === 'Sold') {
+                    statusTag.className = "px-2.5 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold bg-emerald-500/10 border border-emerald-500/25 text-emerald-400";
+                    document.getElementById('modal-sold-price').innerText = "₹" + p.sold_price;
+                    document.getElementById('modal-team-name').innerText = p.team_name;
+                    document.getElementById('modal-bid-history-section').style.display = 'block';
+                    
+                    // Render full bid history list
+                    const listEl = document.getElementById('modal-bid-history-list');
+                    listEl.innerHTML = '';
+                    
+                    if (data.bids && data.bids.length > 0) {
+                        data.bids.forEach(b => {
+                            const row = document.createElement('div');
+                            row.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs transition hover:bg-white/10";
+                            row.innerHTML = `
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gold-400 font-extrabold">₹${b.bid_amount}</span>
+                                    <span class="text-gray-300 font-medium">${b.team_name}</span>
+                                </div>
+                                <span class="text-[9px] text-gray-500 font-mono">${b.bid_time}</span>
+                            `;
+                            listEl.appendChild(row);
+                        });
+                    } else {
+                        listEl.innerHTML = `<div class="text-center text-[10px] text-gray-500 py-4 uppercase font-semibold">Opening bid placed at base price of ₹${p.base_price}</div>`;
+                    }
+                } else {
+                    // Unsold
+                    statusTag.className = "px-2.5 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold bg-red-500/10 border border-red-500/25 text-red-400";
+                    document.getElementById('modal-sold-price').innerText = "—";
+                    document.getElementById('modal-team-name').innerText = "—";
+                    document.getElementById('modal-bid-history-section').style.display = 'none';
+                }
+
+                // Animate opening
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95');
+                }, 50);
+
+            } catch (e) {
+                console.error("Failed to load player details modal:", e);
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('player-details-modal');
+            const content = document.getElementById('modal-content');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 150);
+        }
+
+        // Close on backdrop click
+        document.getElementById('player-details-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'player-details-modal') {
+                closeModal();
+            }
+        });
     </script>
+
+    <!-- PLAYER DETAILS & BID HISTORY MODAL -->
+    <div id="player-details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-all duration-300">
+        <div class="glass-panel w-full max-w-lg rounded-2xl border border-gold-500/20 shadow-2xl overflow-hidden relative transform scale-95 transition-all duration-300" id="modal-content">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/40">
+                <h3 class="text-sm font-black text-gold-400 uppercase tracking-tight flex items-center gap-2">
+                    <span>🏏</span> Player Auction Summary
+                </h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center text-sm transition">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                
+                <!-- Player Banner Info -->
+                <div class="flex flex-col sm:flex-row items-center gap-5 pb-5 border-b border-white/5">
+                    <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md">
+                        <img src="" id="modal-player-image" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-center sm:text-left flex-grow space-y-1.5">
+                        <span class="px-2 py-0.5 rounded text-[7px] uppercase tracking-wider font-extrabold" id="modal-player-status-tag">Status</span>
+                        <h4 class="text-lg font-black text-white tracking-tight" id="modal-player-name">Player Name</h4>
+                        <p class="text-[10px] text-gray-400" id="modal-player-details">Role &bull; Place</p>
+                    </div>
+                </div>
+
+                <!-- Price and Team Statistics Grid -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-500 font-bold">Base Price</span>
+                        <span class="block text-xs font-black text-gray-200 mt-1 font-mono" id="modal-base-price">₹0</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-500 font-bold">Final Price</span>
+                        <span class="block text-xs font-black text-gold-400 mt-1 font-mono" id="modal-sold-price">₹0</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-500 font-bold">Winning Team</span>
+                        <span class="block text-[10px] font-black text-white mt-1.5 truncate" id="modal-team-name">—</span>
+                    </div>
+                </div>
+
+                <!-- Bid History Section -->
+                <div id="modal-bid-history-section" class="space-y-3">
+                    <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-2">
+                        <span>📊</span> Complete Bidding Timeline
+                    </h5>
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="modal-bid-history-list">
+                        <!-- populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </body>
 </html>
