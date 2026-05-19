@@ -17,7 +17,7 @@ if ($playerId <= 0) {
 
 try {
     // 1. Fetch complete player info and team details
-    $stmt = $pdo->prepare("SELECT p.id, p.name, p.mobile, p.place, p.role, p.profile_image, p.payment_status, p.base_price, p.sold_price, p.auction_status, t.team_name 
+    $stmt = $pdo->prepare("SELECT p.id, p.name, p.mobile, p.place, p.role, p.profile_image, p.payment_status, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
                            FROM players p 
                            LEFT JOIN teams t ON p.team_id = t.id 
                            WHERE p.id = :player_id");

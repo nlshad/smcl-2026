@@ -37,6 +37,14 @@ if (!isset($uploadPath)) {
                 document.getElementById('modal-team-name').innerText = p.team_name;
                 document.getElementById('modal-bid-history-section').style.display = 'block';
                 
+                // Show franchise logo in blank space
+                const logoContainer = document.getElementById('modal-player-team-logo-container');
+                const logoImg = document.getElementById('modal-player-team-logo');
+                if (logoContainer && logoImg) {
+                    logoImg.src = p.team_logo ? "<?php echo $uploadPath; ?>" + p.team_logo : "<?php echo $uploadPath; ?>team_placeholder.jpg";
+                    logoContainer.style.display = 'flex';
+                }
+
                 // Render full bid history list
                 const listEl = document.getElementById('modal-bid-history-list');
                 listEl.innerHTML = '';
@@ -63,6 +71,12 @@ if (!isset($uploadPath)) {
                 document.getElementById('modal-sold-price').innerText = "—";
                 document.getElementById('modal-team-name').innerText = "—";
                 document.getElementById('modal-bid-history-section').style.display = 'none';
+
+                // Hide franchise logo
+                const logoContainer = document.getElementById('modal-player-team-logo-container');
+                if (logoContainer) {
+                    logoContainer.style.display = 'none';
+                }
             }
 
             // Animate opening
@@ -198,14 +212,20 @@ if (!isset($uploadPath)) {
         <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
             
             <!-- Player Banner Info -->
-            <div class="flex flex-col sm:flex-row items-center gap-5 pb-5 border-b border-white/5">
-                <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md">
-                    <img src="" id="modal-player-image" class="w-full h-full object-cover">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-5 pb-5 border-b border-white/5">
+                <div class="flex flex-col sm:flex-row items-center gap-5">
+                    <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md">
+                        <img src="" id="modal-player-image" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-center sm:text-left space-y-1.5">
+                        <span class="px-2 py-0.5 rounded text-[7px] uppercase tracking-wider font-extrabold" id="modal-player-status-tag">Status</span>
+                        <h4 class="text-lg font-black text-white tracking-tight" id="modal-player-name">Player Name</h4>
+                        <p class="text-[10px] text-gray-400" id="modal-player-details">Role &bull; Place</p>
+                    </div>
                 </div>
-                <div class="text-center sm:text-left flex-grow space-y-1.5">
-                    <span class="px-2 py-0.5 rounded text-[7px] uppercase tracking-wider font-extrabold" id="modal-player-status-tag">Status</span>
-                    <h4 class="text-lg font-black text-white tracking-tight" id="modal-player-name">Player Name</h4>
-                    <p class="text-[10px] text-gray-400" id="modal-player-details">Role &bull; Place</p>
+                <!-- Franchise Logo for Sold Players -->
+                <div id="modal-player-team-logo-container" class="w-16 h-16 rounded bg-black/40 border border-gold-500/20 flex items-center justify-center p-1 overflow-hidden" style="display: none;">
+                    <img src="" id="modal-player-team-logo" class="max-w-full max-h-full object-contain rounded">
                 </div>
             </div>
 
