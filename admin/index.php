@@ -66,13 +66,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $utr = trim($_POST['utr'] ?? '');
             $status = $_POST['payment_status'] ?? 'Pending';
             $basePrice = (int)($_POST['base_price'] ?? 100);
+            
+            // New Auction Management Fields
+            $teamId = !empty($_POST['team_id']) ? (int)$_POST['team_id'] : null;
+            $auctionStatus = $_POST['auction_status'] ?? 'Available';
+            $soldPrice = !empty($_POST['sold_price']) ? (int)$_POST['sold_price'] : null;
 
             if (empty($name) || empty($mobile) || empty($place) || empty($utr)) {
                 $errorMsg = "❌ All player edit fields are required.";
             } else {
-                $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ? WHERE id = ?");
-                $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $playerId]);
-                $successMsg = "✏️ Player details updated successfully!";
+                $stmt = $pdo->prepare("UPDATE players SET name = ?, mobile = ?, place = ?, role = ?, payment_utr = ?, payment_status = ?, base_price = ?, team_id = ?, auction_status = ?, sold_price = ? WHERE id = ?");
+                $stmt->execute([$name, $mobile, $place, $role, $utr, $status, $basePrice, $teamId, $auctionStatus, $soldPrice, $playerId]);
+                
+                // CRITICAL AUTO-RECALCULATION: 
+                // Instantly sync all franchise purses and squad sizes based on the new reality of the players table!
+                $pdo->exec("
+                    UPDATE teams t 
+                    SET 
+                        current_squad_size = (SELECT COUNT(id) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'),
+                        remaining_purse = total_purse - COALESCE((SELECT SUM(sold_price) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'), 0)
+                ");
+
+                $successMsg = "✏️ Player details and Franchise allocations updated securely!";
             }
         } elseif ($action === 'delete_team') {
             $teamId = (int)$_POST['team_id'];
@@ -489,6 +504,38 @@ try {
                     </div>
                 </div>
 
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Auction Status -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Auction Status</label>
+                        <select name="auction_status" id="edit_player_auction_status"
+                                class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-bold">
+                            <option value="Available">Available</option>
+                            <option value="Sold">Sold</option>
+                            <option value="Unsold">Unsold</option>
+                        </select>
+                    </div>
+
+                    <!-- Sold Price -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Sold Price (₹)</label>
+                        <input type="number" name="sold_price" id="edit_player_sold_price" min="0" step="50"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                    </div>
+                </div>
+
+                <!-- Assigned Franchise -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Assigned Franchise</label>
+                    <select name="team_id" id="edit_player_team_id"
+                            class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-bold">
+                        <option value="">-- None (Available / Unsold) --</option>
+                        <?php foreach ($teams as $t): ?>
+                            <option value="<?php echo $t['id']; ?>"><?php echo htmlspecialchars($t['team_name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <!-- Payment UTR -->
                 <div>
                     <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">UPI Payment UTR</label>
@@ -603,6 +650,11 @@ try {
         document.getElementById('edit_player_base_price').value = player.base_price;
         document.getElementById('edit_player_utr').value = player.payment_utr;
         document.getElementById('edit_player_status').value = player.payment_status;
+        
+        // Populate new auction fields
+        document.getElementById('edit_player_auction_status').value = player.auction_status || 'Available';
+        document.getElementById('edit_player_team_id').value = player.team_id || '';
+        document.getElementById('edit_player_sold_price').value = player.sold_price || '';
         
         document.getElementById('playerEditModal').classList.remove('hidden');
     }
