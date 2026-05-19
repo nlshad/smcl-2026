@@ -139,7 +139,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ");
             
             $successMsg = "🟢 Player released from Franchise successfully!";
-        }
         } elseif ($action === 'edit_team') {
             $teamId = (int)$_POST['team_id'];
             $teamName = trim($_POST['team_name'] ?? '');
