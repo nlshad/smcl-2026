@@ -32,55 +32,92 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Auto-generate unique registration reference (UTR)
             $utr = 'REG-' . strtoupper(bin2hex(random_bytes(6)));
             
-            // File Upload Handling
-            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-                $errorMsg = '❌ Please select a profile image to upload.';
-            } else {
-                $fileTmpPath = $_FILES['profile_image']['tmp_name'];
-                $fileName = $_FILES['profile_image']['name'];
-                $fileSize = $_FILES['profile_image']['size'];
-                $fileType = $_FILES['profile_image']['type'];
-                
-                // Verify size (Max 2MB)
-                $maxSize = 2 * 1024 * 1024;
-                if ($fileSize > $maxSize) {
-                    $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
-                } else {
-                    // Strict MIME-type checking
-                    $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-                    // Use mime_content_type if available, otherwise fallback
-                    $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
+            // File Upload / Cropping Handling
+            $croppedData = $_POST['cropped_image_data'] ?? '';
+            
+            if (!empty($croppedData)) {
+                // Handle Base64 cropped image upload
+                // Format: data:image/jpeg;base64,/9j/4AAQSkZJRg...
+                if (preg_match('/^data:image\/(\w+);base64,/', $croppedData, $typeMatches)) {
+                    $imageType = strtolower($typeMatches[1]); // e.g. jpeg, png
+                    $fileExt = ($imageType === 'png') ? 'png' : 'jpg';
                     
-                    if (!in_array($actualMime, $allowedMimes)) {
-                        $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
+                    $croppedData = substr($croppedData, strpos($croppedData, ',') + 1);
+                    $croppedData = base64_decode($croppedData);
+                    
+                    if ($croppedData === false) {
+                        $errorMsg = '❌ Invalid cropped image data.';
                     } else {
-                        // Extract file extension safely
-                        $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                        if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
-                            $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
-                        }
-                        
                         // Generate unique sanitized name
                         $newFileName = uniqid('player_', true) . '.' . $fileExt;
                         $uploadDir = __DIR__ . '/uploads/';
                         
-                        // Check if directory exists
                         if (!is_dir($uploadDir)) {
                             mkdir($uploadDir, 0777, true);
                         }
                         
                         $destPath = $uploadDir . $newFileName;
                         
-                        if (move_uploaded_file($fileTmpPath, $destPath)) {
+                        if (file_put_contents($destPath, $croppedData)) {
                             // Save to Database
                             $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
                             $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
                             
-                            $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                            $successMsg = "🎉 Registration submitted successfully! Your cropped profile photo is queued for Admin approval.";
                             // Reset form values
                             $name = $mobile = $place = $role = '';
                         } else {
-                            $errorMsg = '❌ Image upload failed. Please try again.';
+                            $errorMsg = '❌ Saving cropped image failed. Please try again.';
+                        }
+                    }
+                } else {
+                    $errorMsg = '❌ Invalid image format.';
+                }
+            } else {
+                // Fallback to standard file upload if cropper wasn't used
+                if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                    $errorMsg = '❌ Please select a profile image to upload.';
+                } else {
+                    $fileTmpPath = $_FILES['profile_image']['tmp_name'];
+                    $fileName = $_FILES['profile_image']['name'];
+                    $fileSize = $_FILES['profile_image']['size'];
+                    $fileType = $_FILES['profile_image']['type'];
+                    
+                    // Verify size (Max 2MB)
+                    $maxSize = 2 * 1024 * 1024;
+                    if ($fileSize > $maxSize) {
+                        $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
+                    } else {
+                        // Strict MIME-type checking
+                        $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+                        $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
+                        
+                        if (!in_array($actualMime, $allowedMimes)) {
+                            $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
+                        } else {
+                            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                            if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
+                                $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
+                            }
+                            
+                            $newFileName = uniqid('player_', true) . '.' . $fileExt;
+                            $uploadDir = __DIR__ . '/uploads/';
+                            
+                            if (!is_dir($uploadDir)) {
+                                mkdir($uploadDir, 0777, true);
+                            }
+                            
+                            $destPath = $uploadDir . $newFileName;
+                            
+                            if (move_uploaded_file($fileTmpPath, $destPath)) {
+                                $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
+                                $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
+                                
+                                $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                                $name = $mobile = $place = $role = '';
+                            } else {
+                                $errorMsg = '❌ Image upload failed. Please try again.';
+                            }
                         }
                     }
                 }
@@ -125,6 +162,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Cropper.js CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -241,6 +281,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="relative w-full bg-black/40 border border-dashed border-white/10 rounded-xl p-4 text-center hover:border-gold-500/40 transition">
                         <input type="file" name="profile_image" id="profile_image" required accept="image/*"
                                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <input type="hidden" name="cropped_image_data" id="cropped_image_data">
                         <div class="space-y-1" id="upload-prompt">
                             <i class="fa-solid fa-camera text-gold-400 text-2xl block mx-auto"></i>
                             <p class="text-xs text-gray-300 font-semibold">Click to upload or drag & drop</p>
@@ -263,24 +304,112 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
     </div>
 
-    <!-- Script for File Input Preview -->
+    <!-- Cropping Modal -->
+    <div id="cropModal" class="fixed inset-0 z-[100] hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-zinc-950 border border-gold-500/20 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-crop text-gold-400"></i> Adjust & Crop Photo
+                </h3>
+                <button type="button" onclick="closeCropModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            
+            <!-- Cropper Area -->
+            <div class="w-full max-h-[50vh] overflow-hidden rounded-xl bg-black border border-white/10 flex items-center justify-center">
+                <img id="cropper-target" src="" class="max-w-full max-h-[50vh]">
+            </div>
+            
+            <p class="text-[10px] text-gray-500 text-center uppercase tracking-wider">Drag to position • Pinch/Scroll to zoom</p>
+            
+            <!-- Actions -->
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeCropModal()"
+                        class="flex-1 bg-zinc-900 border border-white/5 text-gray-400 font-bold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-white/5 transition">
+                    Cancel
+                </button>
+                <button type="button" onclick="performCrop()"
+                        class="flex-1 bg-gold-500 text-black font-extrabold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:bg-gold-400 transition">
+                    Crop & Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for File Input Preview & Cropping -->
     <script>
+        let cropper = null;
         const fileInput = document.getElementById('profile_image');
         const promptDiv = document.getElementById('upload-prompt');
         const feedbackDiv = document.getElementById('upload-feedback');
         const nameDisplay = document.getElementById('file-name-display');
+        
+        const cropModal = document.getElementById('cropModal');
+        const cropperTarget = document.getElementById('cropper-target');
+        const croppedInput = document.getElementById('cropped_image_data');
 
         fileInput.addEventListener('change', (e) => {
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                nameDisplay.innerText = file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)';
-                promptDiv.classList.add('hidden');
-                feedbackDiv.classList.remove('hidden');
-            } else {
-                promptDiv.classList.remove('hidden');
-                feedbackDiv.classList.add('hidden');
+                
+                // Show modal & start cropper
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    cropperTarget.src = event.target.result;
+                    cropModal.classList.remove('hidden');
+                    
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    
+                    cropper = new Cropper(cropperTarget, {
+                        aspectRatio: 9 / 10,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 1,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
+                reader.readAsDataURL(file);
             }
         });
+
+        function closeCropModal() {
+            cropModal.classList.add('hidden');
+            fileInput.value = ''; // Reset input
+            croppedInput.value = '';
+            promptDiv.classList.remove('hidden');
+            feedbackDiv.classList.add('hidden');
+        }
+
+        function performCrop() {
+            if (!cropper) return;
+            
+            // Get cropped canvas optimized for profile cards
+            const canvas = cropper.getCroppedCanvas({
+                width: 360,
+                height: 400,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            
+            // Convert to base64
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            croppedInput.value = dataUrl;
+            
+            // UI feedback
+            nameDisplay.innerText = '✓ Photo cropped and formatted successfully!';
+            promptDiv.classList.add('hidden');
+            feedbackDiv.classList.remove('hidden');
+            cropModal.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
