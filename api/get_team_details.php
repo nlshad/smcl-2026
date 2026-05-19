@@ -17,7 +17,7 @@ if ($teamId <= 0) {
 
 try {
     // 1. Fetch team statistics and info
-    $stmt = $pdo->prepare("SELECT id, team_name, owner_name, logo, total_purse, remaining_purse, current_squad_size, max_squad_size 
+    $stmt = $pdo->prepare("SELECT id, team_name, manager_username as owner_name, logo, total_purse, remaining_purse, current_squad_size, max_squad_size 
                            FROM teams WHERE id = :team_id");
     $stmt->execute(['team_id' => $teamId]);
     $team = $stmt->fetch();

@@ -453,8 +453,16 @@ require_once '../config/db.php';
                         lastBidAmount = data.highest_bid;
                     }
 
-                    document.getElementById('leading-team').innerText = data.leading_team_name || "No bids placed yet";
-
+                    const leadingTeamEl = document.getElementById('leading-team');
+                    if (data.leading_team_name) {
+                        leadingTeamEl.innerText = data.leading_team_name;
+                        leadingTeamEl.className = "text-base font-extrabold text-white cursor-pointer hover:text-gold-400 transition";
+                        leadingTeamEl.onclick = () => openTeamDetailsModal(data.leading_team_id);
+                    } else {
+                        leadingTeamEl.innerText = "No bids placed yet";
+                        leadingTeamEl.className = "text-base font-extrabold text-white";
+                        leadingTeamEl.onclick = null;
+                    }
                     // Sync Bids History Feed
                     const historyList = document.getElementById('bid-history-list');
                     historyList.innerHTML = '';
@@ -593,7 +601,7 @@ require_once '../config/db.php';
                                     <span class="text-xs font-black text-gold-400 mt-1 font-mono">${p.auction_status === 'Sold' ? '₹' + p.sold_price : '—'}</span>
                                 </div>
                                 <!-- Team -->
-                                <div class="flex flex-col items-center justify-center">
+                                <div class="flex flex-col items-center justify-center ${p.auction_status === 'Sold' ? 'cursor-pointer hover:bg-white/5 p-1 rounded transition' : ''}" ${p.auction_status === 'Sold' ? `onclick="event.stopPropagation(); openTeamDetailsModal(${p.team_id})"` : ''}>
                                     <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
                                     ${p.auction_status === 'Sold' 
                                         ? `<span class="text-xs font-extrabold text-white tracking-tight mt-1 truncate max-w-[80px]">${p.team_name}</span>` 
