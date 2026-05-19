@@ -137,9 +137,18 @@ try {
      // Auto-upgrade database schema to support registration toggle
      try {
          $pdo->exec("ALTER TABLE auction_state ADD COLUMN registration_enabled TINYINT(1) DEFAULT 1");
-     } catch (\PDOException $ex) {
-         // Ignore "duplicate column" error
-     }
+     } catch (\PDOException $ex) {}
+     try {
+         $pdo->exec("ALTER TABLE auction_state ADD COLUMN history_pointer INT DEFAULT 0");
+     } catch (\PDOException $ex) {}
+     try {
+         $pdo->exec("CREATE TABLE IF NOT EXISTS auction_history (
+             id INT AUTO_INCREMENT PRIMARY KEY,
+             state_snapshot LONGTEXT NOT NULL,
+             action_type VARCHAR(50) NOT NULL,
+             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+         ) ENGINE=InnoDB");
+     } catch (\PDOException $ex) {}
 } catch (\PDOException $e) {
      // If the database doesn't exist yet, we allow a fallback connection to establish it in setup.php
      if ($e->getCode() == 1049) { 

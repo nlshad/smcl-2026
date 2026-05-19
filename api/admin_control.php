@@ -2,6 +2,7 @@
 // api/admin_control.php
 session_start();
 require_once '../config/db.php';
+require_once '../config/auction_history.php';
 header('Content-Type: application/json');
 
 // Check database connection
@@ -68,6 +69,8 @@ try {
             ]);
 
             $pdo->commit();
+            record_auction_history_step($pdo, 'start');
+            
             echo json_encode(['success' => true, 'message' => "Bidding started for {$player['name']} at ₹{$basePrice}."]);
             break;
 
@@ -139,6 +142,8 @@ try {
             $stmt->execute();
 
             $pdo->commit();
+            record_auction_history_step($pdo, 'sold');
+
             echo json_encode(['success' => true, 'message' => "Player sold successfully to {$team['team_name']} for ₹{$bidAmount}!"]);
             break;
 
@@ -167,6 +172,8 @@ try {
             $stmt->execute();
 
             $pdo->commit();
+            record_auction_history_step($pdo, 'unsold');
+
             echo json_encode(['success' => true, 'message' => 'Player marked as Unsold. Returning to pool.']);
             break;
 
@@ -190,7 +197,57 @@ try {
             $stmt->execute(['status' => $newStatus]);
 
             $pdo->commit();
+            record_auction_history_step($pdo, 'toggle_pause');
+
             echo json_encode(['success' => true, 'status' => $newStatus, 'message' => "Auction has been " . ($newStatus === 'Paused' ? 'PAUSED' : 'RESUMED') . "."]);
+            break;
+
+        case 'undo':
+            $pointer = ensure_history_baseline($pdo);
+
+            // Find previous state in history
+            $stmt = $pdo->prepare("SELECT id, state_snapshot FROM auction_history WHERE id < ? ORDER BY id DESC LIMIT 1");
+            $stmt->execute([$pointer]);
+            $prevStep = $stmt->fetch();
+
+            if (!$prevStep) {
+                echo json_encode(['success' => false, 'error' => 'No more actions to undo.']);
+                exit;
+            }
+
+            // Restore state
+            $prevSnapshot = json_decode($prevStep['state_snapshot'], true);
+            restore_auction_state_snapshot($pdo, $prevSnapshot);
+
+            // Update history pointer
+            $stmt = $pdo->prepare("UPDATE auction_state SET history_pointer = ? WHERE id = 1");
+            $stmt->execute([$prevStep['id']]);
+
+            echo json_encode(['success' => true, 'message' => 'Action undone successfully.']);
+            break;
+
+        case 'redo':
+            $pointer = ensure_history_baseline($pdo);
+
+            // Find next state in history
+            $stmt = $pdo->prepare("SELECT id, state_snapshot FROM auction_history WHERE id > ? ORDER BY id ASC LIMIT 1");
+            $stmt->execute([$pointer]);
+            $nextStep = $stmt->fetch();
+
+            if (!$nextStep) {
+                echo json_encode(['success' => false, 'error' => 'No more actions to redo.']);
+                exit;
+            }
+
+            // Restore state
+            $nextSnapshot = json_decode($nextStep['state_snapshot'], true);
+            restore_auction_state_snapshot($pdo, $nextSnapshot);
+
+            // Update history pointer
+            $stmt = $pdo->prepare("UPDATE auction_state SET history_pointer = ? WHERE id = 1");
+            $stmt->execute([$nextStep['id']]);
+
+            echo json_encode(['success' => true, 'message' => 'Action redone successfully.']);
             break;
 
         default:

@@ -44,6 +44,17 @@ try {
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- Undo & Redo Action Buttons -->
+            <div class="flex items-center bg-zinc-950 border border-white/5 rounded-xl p-0.5 shadow-sm">
+                <button onclick="triggerHistoryAction('undo')" class="flex items-center justify-center hover:bg-white/5 hover:text-white w-8 h-8 rounded-lg text-gray-400 transition duration-150" title="Undo Last Auction Action">
+                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                </button>
+                <div class="w-[1px] h-4 bg-white/5"></div>
+                <button onclick="triggerHistoryAction('redo')" class="flex items-center justify-center hover:bg-white/5 hover:text-white w-8 h-8 rounded-lg text-gray-400 transition duration-150" title="Redo Next Auction Action">
+                    <i class="fa-solid fa-rotate-right text-xs"></i>
+                </button>
+            </div>
+
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-zinc-900 border border-white/5 hover:border-gold-500/30 w-8 h-8 rounded-lg text-xs transition duration-200" title="Toggle Sound Effects">
                 <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>
             </button>
@@ -175,6 +186,16 @@ try {
                                 class="w-full bg-zinc-800 hover:bg-zinc-700 text-gold-400 font-bold uppercase text-[10px] tracking-wider py-3 px-4 rounded-xl transition border border-gold-500/10">
                             pause bidding
                         </button>
+                        <div class="grid grid-cols-2 gap-3 mt-2">
+                            <button onclick="triggerHistoryAction('undo')"
+                                    class="w-full bg-zinc-950/80 border border-white/10 hover:border-gold-500/30 text-gray-300 hover:text-white font-extrabold uppercase text-[10px] tracking-wider py-2.5 px-4 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-rotate-left"></i> Undo
+                            </button>
+                            <button onclick="triggerHistoryAction('redo')"
+                                    class="w-full bg-zinc-950/80 border border-white/10 hover:border-gold-500/30 text-gray-300 hover:text-white font-extrabold uppercase text-[10px] tracking-wider py-2.5 px-4 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-rotate-right"></i> Redo
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -492,6 +513,31 @@ try {
                     }
                 } else {
                     showToast(result.error || "Action rejected by server.", "error");
+                }
+            } catch (error) {
+                showToast("Server connection error.", "error");
+                console.error(error);
+            }
+        }
+
+        async function triggerHistoryAction(actionName) {
+            const formData = new FormData();
+            formData.append('action', actionName);
+
+            try {
+                const response = await fetch('../api/admin_control.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(result.message || "History updated successfully!", "success");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 850);
+                } else {
+                    showToast(result.error || "Action not available.", "error");
                 }
             } catch (error) {
                 showToast("Server connection error.", "error");

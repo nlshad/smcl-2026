@@ -1,6 +1,7 @@
 <?php
 // api/place_bid.php
 require_once '../config/db.php';
+require_once '../config/auction_history.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -106,6 +107,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Commit transaction
         $pdo->commit();
+        
+        // Record step in history
+        record_auction_history_step($pdo, 'bid');
+        
         echo json_encode(['success' => true]);
 
     } catch (Exception $e) {
