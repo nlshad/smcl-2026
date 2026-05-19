@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $errorMsg = "❌ Manager username already taken.";
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, 'placeholder_logo.png', ?, ?, ?, ?, 0, 15)");
+                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, 'team_placeholder.jpg', ?, ?, ?, ?, 0, 15)");
                     $stmt->execute([$teamName, $username, $hashedPassword, $purse, $purse]);
                     $successMsg = "🎉 Franchise Team '$teamName' created successfully! Manager can log in with username '$username'.";
                 }
@@ -367,11 +367,14 @@ try {
                         <?php else: ?>
                             <?php foreach ($teams as $t): ?>
                                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
-                                    <div>
-                                        <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
-                                        <div class="text-[10px] text-gray-500 mt-1">
-                                            Roster: <strong class="text-gray-300 font-bold"><?php echo $t['current_squad_size']; ?>/<?php echo $t['max_squad_size']; ?></strong> 
-                                            | User: <strong class="text-gold-500 font-mono"><?php echo htmlspecialchars($t['manager_username']); ?></strong>
+                                    <div class="flex items-center gap-2.5">
+                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-6 h-6 rounded-full object-cover border border-gold-500/20 shadow-sm">
+                                        <div>
+                                            <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
+                                            <div class="text-[10px] text-gray-500 mt-1">
+                                                Roster: <strong class="text-gray-300 font-bold"><?php echo $t['current_squad_size']; ?>/<?php echo $t['max_squad_size']; ?></strong> 
+                                                | User: <strong class="text-gold-500 font-mono"><?php echo htmlspecialchars($t['manager_username']); ?></strong>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between sm:justify-end gap-3.5">

@@ -149,11 +149,11 @@ try {
 
     foreach ($defaultPlayers as $player) {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE payment_utr = ?");
-        $stmt->execute([$player[6]]);
+        $stmt->execute([$player[5]]);
         if ($stmt->fetchColumn() == 0) {
             $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute($player);
-            $message[] = "🏏 Seeded Player Pool: <strong>{$player[0]}</strong> ({$player[3]}, UTR: {$player[6]}, Status: {$player[7]})";
+            $message[] = "🏏 Seeded Player Pool: <strong>{$player[0]}</strong> ({$player[3]}, UTR: {$player[5]}, Status: {$player[6]})";
         }
     }
 
@@ -207,6 +207,25 @@ foreach (['sanju', 'sachin', 'basil', 'sandeep', 'rohan', 'sharaf'] as $p_slug) 
     copy($silhouetteDest, $uploadDir . "/player_{$p_slug}.jpg");
 }
 $message[] = "🏏 Mapped default golden silhouettes to all mock seeded players.";
+
+// Copy generated franchise logo files from brain directory
+$brainDir = 'C:/Users/Nishad/.gemini/antigravity/brain/0bc3debc-750d-4102-9087-2c6aa5f34d84/';
+$logoMappings = [
+    $brainDir . 'kochi_logo_1779176830624.png' => $uploadDir . '/kochi_logo.png',
+    $brainDir . 'calicut_logo_1779176848493.png' => $uploadDir . '/calicut_logo.png',
+    $brainDir . 'trivandrum_logo_1779176865671.png' => $uploadDir . '/trivandrum_logo.png',
+    $brainDir . 'malabar_logo_1779176881416.png' => $uploadDir . '/malabar_logo.png',
+    $brainDir . 'team_placeholder_1779176900898.png' => $uploadDir . '/team_placeholder.jpg'
+];
+
+foreach ($logoMappings as $src => $dest) {
+    if (file_exists($src)) {
+        copy($src, $dest);
+        $message[] = "🎯 Copied logo file: " . basename($dest);
+    } else {
+        $message[] = "⚠️ Source logo not found: " . basename($src);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -31,6 +31,7 @@ try {
     $highestBid = 0;
     $leadingTeamName = null;
     $leadingTeamId = null;
+    $leadingTeamLogo = null;
 
     // 2. Fetch active player info if a player is on the block
     if ($state['current_player_id']) {
@@ -40,7 +41,7 @@ try {
 
         if ($currentPlayer) {
             // Fetch bids history for this player
-            $stmt = $pdo->prepare("SELECT b.bid_amount, t.team_name, t.id as team_id, DATE_FORMAT(b.created_at, '%h:%i:%s %p') as bid_time 
+            $stmt = $pdo->prepare("SELECT b.bid_amount, t.team_name, t.id as team_id, t.logo as team_logo, DATE_FORMAT(b.created_at, '%h:%i:%s %p') as bid_time 
                                    FROM bids b 
                                    JOIN teams t ON b.team_id = t.id 
                                    WHERE b.player_id = :player_id 
@@ -52,6 +53,7 @@ try {
                 $highestBid = (int)$bidHistory[0]['bid_amount'];
                 $leadingTeamName = $bidHistory[0]['team_name'];
                 $leadingTeamId = (int)$bidHistory[0]['team_id'];
+                $leadingTeamLogo = $bidHistory[0]['team_logo'];
             } else {
                 $highestBid = (int)$currentPlayer['base_price'];
             }
@@ -79,6 +81,7 @@ try {
         'highest_bid' => $highestBid,
         'leading_team_name' => $leadingTeamName,
         'leading_team_id' => $leadingTeamId,
+        'leading_team_logo' => $leadingTeamLogo,
         'bid_history' => $bidHistory,
         'teams' => $teams,
         'completed_players' => $completedPlayers

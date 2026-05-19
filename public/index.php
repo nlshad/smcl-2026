@@ -119,7 +119,9 @@ require_once '../config/db.php';
                     <div class="mt-4 border-t border-white/5 pt-4">
                         <span class="text-[9px] uppercase tracking-widest font-bold text-gray-500">Leading Franchise</span>
                         <div class="flex items-center gap-3 mt-1.5">
-                            <i class="fa-solid fa-crown text-2xl text-gold-400"></i>
+                            <div id="leading-team-logo-container" class="w-9 h-9 rounded-full bg-black/40 border border-gold-500/20 flex items-center justify-center overflow-hidden">
+                                <i class="fa-solid fa-crown text-xl text-gold-400" id="leading-team-crown"></i>
+                            </div>
                             <div>
                                 <h3 class="text-base font-extrabold text-white" id="leading-team">---</h3>
                                 <p class="text-[9px] text-gold-500 uppercase tracking-widest font-bold">High Bidholder</p>
@@ -396,15 +398,19 @@ require_once '../config/db.php';
                         lastBidAmount = data.highest_bid;
                     }
 
+                    const logoContainer = document.getElementById('leading-team-logo-container');
                     const leadingTeamEl = document.getElementById('leading-team');
                     if (data.leading_team_name) {
                         leadingTeamEl.innerText = data.leading_team_name;
                         leadingTeamEl.className = "text-base font-extrabold text-white cursor-pointer hover:text-gold-400 transition";
                         leadingTeamEl.onclick = () => openTeamDetailsModal(data.leading_team_id);
+                        const logoSrc = data.leading_team_logo ? "uploads/" + data.leading_team_logo : "uploads/team_placeholder.jpg";
+                        logoContainer.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-cover">`;
                     } else {
                         leadingTeamEl.innerText = "No bids placed yet";
                         leadingTeamEl.className = "text-base font-extrabold text-white";
                         leadingTeamEl.onclick = null;
+                        logoContainer.innerHTML = `<i class="fa-solid fa-crown text-xl text-gold-400" id="leading-team-crown"></i>`;
                     }
                     // Sync Bids History Feed
                     const historyList = document.getElementById('bid-history-list');
@@ -461,9 +467,11 @@ require_once '../config/db.php';
                                 : 'bg-black/30 border-white/5 hover:border-white/10 hover:bg-white/5'
                         }`;
                         div.onclick = () => openTeamDetailsModal(team.id);
+                        const logoSrc = team.logo ? "uploads/" + team.logo : "uploads/team_placeholder.jpg";
                         div.innerHTML = `
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <img src="${logoSrc}" class="w-6 h-6 rounded-full object-cover border border-gold-500/20 shadow-md">
                                     <span class="text-sm font-bold text-white">${team.team_name}</span>
                                     ${isLeading ? '<span class="text-[8px] uppercase tracking-widest font-extrabold text-gold-400 bg-gold-950/60 px-1.5 py-0.5 rounded border border-gold-500/20 animate-pulse">High Bidder</span>' : ''}
                                 </div>
@@ -547,7 +555,10 @@ require_once '../config/db.php';
                                 <div class="flex flex-col items-center justify-center ${p.auction_status === 'Sold' ? 'cursor-pointer hover:bg-white/5 p-1 rounded transition' : ''}" ${p.auction_status === 'Sold' ? `onclick="event.stopPropagation(); openTeamDetailsModal(${p.team_id})"` : ''}>
                                     <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
                                     ${p.auction_status === 'Sold' 
-                                        ? `<span class="text-xs font-extrabold text-white tracking-tight mt-1 truncate max-w-[80px]">${p.team_name}</span>` 
+                                        ? `<div class="flex items-center gap-1.5 mt-1 justify-center max-w-[90px]">
+                                             <img src="uploads/${p.team_logo ? p.team_logo : 'team_placeholder.jpg'}" class="w-3.5 h-3.5 rounded-full object-cover border border-gold-500/20">
+                                             <span class="text-[10px] font-extrabold text-white tracking-tight truncate">${p.team_name}</span>
+                                           </div>` 
                                         : '<span class="text-xs font-bold text-gray-600 mt-1">—</span>'
                                     }
                                 </div>
