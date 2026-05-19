@@ -68,7 +68,7 @@ try {
         <div class="flex items-center gap-2 sm:gap-4">
             <!-- League Logo Badge -->
             <div class="hidden sm:flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
-                <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-6.5 h-6 object-contain">
+                <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-7 h-7 object-contain">
                 <span class="text-gold-400 text-[10px] font-black uppercase tracking-wider">SMCL 2026</span>
             </div>
 

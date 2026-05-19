@@ -1,6 +1,10 @@
 # Ignore custom uploaded player photos to keep repository light
 public/uploads/*
 !public/uploads/player_placeholder.jpg
+!public/uploads/team_placeholder.jpg
+!public/uploads/league_logo.png
+!public/uploads/*_logo.png
+!public/uploads/player_*.jpg
 
 # Ignore OS junk metadata
 Thumbs.db
