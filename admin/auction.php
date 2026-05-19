@@ -69,11 +69,11 @@ try {
     </header>
 
     <!-- Main Live Controls Grid -->
-    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-12 gap-6 relative">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,163,12,0.015)_0%,transparent_75%)] pointer-events-none"></div>
 
         <!-- LEFT SIDE: Available Players to Bring to Block (4 Cols) -->
-        <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col max-h-[580px]">
+        <aside class="col-span-12 lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col max-h-[580px]">
             <div class="border-b border-white/5 pb-3 mb-4">
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available Pool</h3>
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Select and bring player to block</p>
@@ -117,7 +117,7 @@ try {
         </aside>
 
         <!-- RIGHT SIDE: Auction Block Control Centre (8 Cols) -->
-        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-12 gap-6" id="auctioneer-controls">
+        <div class="col-span-12 lg:col-span-8 grid grid-cols-12 gap-6" id="auctioneer-controls">
             
             <!-- Standby Box -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[450px]">
@@ -129,7 +129,7 @@ try {
             </div>
 
             <!-- Active Player Card (5 Cols) -->
-            <div id="player-card" class="hidden md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
+            <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
                     <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
                         <img src="" id="player-image" alt="Player Image" class="w-full h-full object-cover">
@@ -153,7 +153,7 @@ try {
             </div>
 
             <!-- Bids & Auctioneer Controllers (7 Cols) -->
-            <div id="bid-control-card" class="hidden md:col-span-7 space-y-6 flex flex-col justify-between">
+            <div id="bid-control-card" class="hidden col-span-12 md:col-span-7 space-y-6 flex flex-col justify-between">
                 
                 <!-- Bidding Panel -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15 flex-grow flex flex-col justify-between">

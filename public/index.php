@@ -62,11 +62,11 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
     </header>
 
     <!-- Main Live Dashboard Arena -->
-    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-12 gap-6 relative">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,163,12,0.03)_0%,transparent_75%)] pointer-events-none"></div>
 
         <!-- LEFT SIDE: Bento-Grid Auction Section (8 Cols) -->
-        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-12 gap-6" id="auction-grid">
+        <div class="col-span-12 lg:col-span-8 grid grid-cols-12 gap-6" id="auction-grid">
             
             <!-- Standard Standby Box (Will show when current_player is NULL) -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[450px]">
@@ -156,7 +156,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
         </div>
 
         <!-- RIGHT SIDE: Franchise Standings Leaderboard (4 Cols) -->
-        <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
+        <aside class="col-span-12 lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
             <div class="border-b border-white/5 pb-3 mb-4">
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-2">
                     <i class="fa-solid fa-wallet text-base text-gray-400"></i> Franchise Purses
