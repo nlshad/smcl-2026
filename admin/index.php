@@ -46,9 +46,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($stmt->fetchColumn() > 0) {
                     $errorMsg = "❌ Manager username already taken.";
                 } else {
+                    // Handle file upload
+                    $logoName = 'team_placeholder.jpg';
+                    if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+                        $fileTmpPath = $_FILES['logo']['tmp_name'];
+                        $fileName = $_FILES['logo']['name'];
+                        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                        
+                        $newFileName = 'team_' . time() . '_' . uniqid() . '.' . $fileExtension;
+                        $uploadFileDir = '../public/uploads/';
+                        $dest_path = $uploadFileDir . $newFileName;
+                        
+                        if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                            $logoName = $newFileName;
+                        }
+                    }
+
                     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, 'team_placeholder.jpg', ?, ?, ?, ?, 0, 15)");
-                    $stmt->execute([$teamName, $username, $hashedPassword, $purse, $purse]);
+                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, ?, ?, ?, ?, ?, 0, 15)");
+                    $stmt->execute([$teamName, $logoName, $username, $hashedPassword, $purse, $purse]);
                     $successMsg = "🎉 Franchise Team '$teamName' created successfully! Manager can log in with username '$username'.";
                 }
             }
@@ -105,13 +121,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (empty($teamName) || empty($username)) {
                 $errorMsg = "❌ All team edit fields are required.";
             } else {
+                // Fetch current logo
+                $stmt = $pdo->prepare("SELECT logo FROM teams WHERE id = ?");
+                $stmt->execute([$teamId]);
+                $currTeam = $stmt->fetch();
+                $logoName = $currTeam['logo'] ?? 'team_placeholder.jpg';
+
+                // Handle file upload
+                if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+                    $fileTmpPath = $_FILES['logo']['tmp_name'];
+                    $fileName = $_FILES['logo']['name'];
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    
+                    $newFileName = 'team_' . time() . '_' . uniqid() . '.' . $fileExtension;
+                    $uploadFileDir = '../public/uploads/';
+                    $dest_path = $uploadFileDir . $newFileName;
+                    
+                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                        $logoName = $newFileName;
+                    }
+                }
+
                 if (!empty($_POST['password'])) {
                     $hashedPassword = password_hash($_POST['password'], PASSWORD_BCRYPT);
-                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, manager_password = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ? WHERE id = ?");
-                    $stmt->execute([$teamName, $username, $hashedPassword, $purse, $remPurse, $maxSquad, $teamId]);
+                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, manager_password = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ?, logo = ? WHERE id = ?");
+                    $stmt->execute([$teamName, $username, $hashedPassword, $purse, $remPurse, $maxSquad, $logoName, $teamId]);
                 } else {
-                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ? WHERE id = ?");
-                    $stmt->execute([$teamName, $username, $purse, $remPurse, $maxSquad, $teamId]);
+                    $stmt = $pdo->prepare("UPDATE teams SET team_name = ?, manager_username = ?, total_purse = ?, remaining_purse = ?, max_squad_size = ?, logo = ? WHERE id = ?");
+                    $stmt->execute([$teamName, $username, $purse, $remPurse, $maxSquad, $logoName, $teamId]);
                 }
                 $successMsg = "✏️ Franchise Team details updated successfully!";
             }
@@ -317,7 +354,7 @@ try {
                         <i class="fa-solid fa-plus text-base text-gray-400"></i> Add Franchise Team
                     </h3>
 
-                    <form action="index.php" method="POST" class="space-y-4">
+                    <form action="index.php" method="POST" enctype="multipart/form-data" class="space-y-4">
                         <input type="hidden" name="action" value="create_team">
                         
                         <!-- Team Name -->
@@ -348,6 +385,13 @@ try {
                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gold-400 font-bold focus:outline-none focus:border-gold-500 transition font-mono">
                         </div>
 
+                        <!-- Franchise Logo Upload -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Franchise Logo (PNG / JPG)</label>
+                            <input type="file" name="logo" accept="image/*"
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-gold-500/10 file:text-gold-400 hover:file:bg-gold-500/20 file:cursor-pointer">
+                        </div>
+
                         <!-- Submit -->
                         <button type="submit"
                                 class="w-full bg-gradient-to-r from-gold-500 to-amber-600 text-black font-extrabold uppercase text-[10px] tracking-wider py-3.5 px-4 rounded-xl hover:from-gold-400 hover:to-gold-500 transition duration-300">
@@ -368,7 +412,7 @@ try {
                             <?php foreach ($teams as $t): ?>
                                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
                                     <div class="flex items-center gap-2.5">
-                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-6 h-6 rounded-full object-cover border border-gold-500/20 shadow-sm">
+                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm">
                                         <div>
                                             <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
                                             <div class="text-[10px] text-gray-500 mt-1">
@@ -540,7 +584,7 @@ try {
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-pen text-gold-400"></i> Edit Franchise Team</h3>
                 <button onclick="closeTeamEditModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
-            <form action="index.php" method="POST" class="space-y-4">
+            <form action="index.php" method="POST" enctype="multipart/form-data" class="space-y-4">
                 <input type="hidden" name="action" value="edit_team">
                 <input type="hidden" name="team_id" id="edit_team_id">
 
@@ -586,6 +630,13 @@ try {
                     <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Max Squad Size</label>
                     <input type="number" name="max_squad_size" id="edit_team_max_squad" min="5" max="30" required
                            class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
+                </div>
+
+                <!-- Franchise Logo Update -->
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Update Franchise Logo (Leave blank to keep current)</label>
+                    <input type="file" name="logo" accept="image/*"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-gold-500/10 file:text-gold-400 hover:file:bg-gold-500/20 file:cursor-pointer">
                 </div>
 
                 <!-- Buttons -->

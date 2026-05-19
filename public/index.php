@@ -119,7 +119,7 @@ require_once '../config/db.php';
                     <div class="mt-4 border-t border-white/5 pt-4">
                         <span class="text-[9px] uppercase tracking-widest font-bold text-gray-500">Leading Franchise</span>
                         <div class="flex items-center gap-3 mt-1.5">
-                            <div id="leading-team-logo-container" class="w-9 h-9 rounded-full bg-black/40 border border-gold-500/20 flex items-center justify-center overflow-hidden">
+                            <div id="leading-team-logo-container" class="w-9 h-9 rounded bg-black/40 border border-gold-500/20 flex items-center justify-center overflow-hidden p-0.5">
                                 <i class="fa-solid fa-crown text-xl text-gold-400" id="leading-team-crown"></i>
                             </div>
                             <div>
@@ -405,7 +405,7 @@ require_once '../config/db.php';
                         leadingTeamEl.className = "text-base font-extrabold text-white cursor-pointer hover:text-gold-400 transition";
                         leadingTeamEl.onclick = () => openTeamDetailsModal(data.leading_team_id);
                         const logoSrc = data.leading_team_logo ? "uploads/" + data.leading_team_logo : "uploads/team_placeholder.jpg";
-                        logoContainer.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-cover">`;
+                        logoContainer.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-contain">`;
                     } else {
                         leadingTeamEl.innerText = "No bids placed yet";
                         leadingTeamEl.className = "text-base font-extrabold text-white";
@@ -471,7 +471,7 @@ require_once '../config/db.php';
                         div.innerHTML = `
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2.5">
-                                    <img src="${logoSrc}" class="w-6 h-6 rounded-full object-cover border border-gold-500/20 shadow-md">
+                                    <img src="${logoSrc}" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-md">
                                     <span class="text-sm font-bold text-white">${team.team_name}</span>
                                     ${isLeading ? '<span class="text-[8px] uppercase tracking-widest font-extrabold text-gold-400 bg-gold-950/60 px-1.5 py-0.5 rounded border border-gold-500/20 animate-pulse">High Bidder</span>' : ''}
                                 </div>
@@ -556,7 +556,7 @@ require_once '../config/db.php';
                                     <span class="text-[8px] uppercase tracking-wider text-gray-500 font-bold">Team</span>
                                     ${p.auction_status === 'Sold' 
                                         ? `<div class="flex items-center gap-1.5 mt-1 justify-center max-w-[90px]">
-                                             <img src="uploads/${p.team_logo ? p.team_logo : 'team_placeholder.jpg'}" class="w-3.5 h-3.5 rounded-full object-cover border border-gold-500/20">
+                                             <img src="uploads/${p.team_logo ? p.team_logo : 'team_placeholder.jpg'}" class="w-4 h-4 rounded object-contain bg-black/40 p-0.5 border border-white/10">
                                              <span class="text-[10px] font-extrabold text-white tracking-tight truncate">${p.team_name}</span>
                                            </div>` 
                                         : '<span class="text-xs font-bold text-gray-600 mt-1">—</span>'
