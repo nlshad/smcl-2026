@@ -380,8 +380,13 @@ try {
                     </div>
                 </div>
 
+                <!-- Add Team Toggle Button -->
+                <button id="add-team-btn" onclick="toggleAddTeamForm()" class="w-full bg-gradient-to-r from-gold-500/10 to-amber-500/10 border border-gold-500/35 hover:border-gold-500/50 text-gold-400 hover:text-gold-300 font-extrabold uppercase text-[10px] tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-500/15 transition duration-200 shadow-md">
+                    <i class="fa-solid fa-plus-circle text-xs text-gold-400"></i> Add Franchise Team
+                </button>
+
                 <!-- Create Franchise Form -->
-                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
+                <div id="add-team-panel" class="glass-panel rounded-2xl p-5 border border-gold-500/15 hidden">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
                         <i class="fa-solid fa-plus text-base text-gray-400"></i> Add Franchise Team
                     </h3>
@@ -723,6 +728,18 @@ try {
 
     function closeTeamEditModal() {
         document.getElementById('teamEditModal').classList.add('hidden');
+    }
+
+    function toggleAddTeamForm() {
+        const panel = document.getElementById('add-team-panel');
+        const btn = document.getElementById('add-team-btn');
+        if (panel.classList.contains('hidden')) {
+            panel.classList.remove('hidden');
+            btn.innerHTML = '<i class="fa-solid fa-circle-minus text-xs text-gold-400"></i> Hide Add Form';
+        } else {
+            panel.classList.add('hidden');
+            btn.innerHTML = '<i class="fa-solid fa-plus-circle text-xs text-gold-400"></i> Add Franchise Team';
+        }
     }
     </script>
     <?php 
