@@ -31,6 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt = $pdo->prepare("UPDATE players SET payment_status = 'Rejected', auction_status = 'Available' WHERE id = :id");
             $stmt->execute(['id' => $playerId]);
             $successMsg = "🔴 Player registration rejected.";
+        } elseif ($action === 'toggle_registration') {
+            $enabled = (int)$_POST['registration_enabled'];
+            $stmt = $pdo->prepare("UPDATE auction_state SET registration_enabled = ? WHERE id = 1");
+            $stmt->execute([$enabled]);
+            $successMsg = $enabled ? "🟢 Public player registration is now ENABLED." : "🔴 Public player registration is now DISABLED.";
         } elseif ($action === 'create_team') {
             $teamName = trim($_POST['team_name'] ?? '');
             $username = trim($_POST['username'] ?? '');
@@ -169,6 +174,12 @@ try {
     $stmt = $pdo->prepare("SELECT * FROM teams ORDER BY id DESC");
     $stmt->execute();
     $teams = $stmt->fetchAll();
+
+    // 3. Fetch Registration status
+    $stmt = $pdo->prepare("SELECT registration_enabled FROM auction_state WHERE id = 1");
+    $stmt->execute();
+    $regState = $stmt->fetch();
+    $registrationEnabled = $regState ? (bool)$regState['registration_enabled'] : true;
 } catch (Exception $e) {
     die("Database Error: " . $e->getMessage());
 }
@@ -348,6 +359,27 @@ try {
 
             <!-- Right Side: Teams List & Creation (4 Cols) -->
             <div class="lg:col-span-4 space-y-6">
+                <!-- Registration Status Control -->
+                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
+                    <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
+                        <i class="fa-solid fa-users-gear text-base text-gray-400"></i> Registration Settings
+                    </h3>
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-xs font-bold text-white">Public Registration</div>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Toggle open/closed status for new player registrations</p>
+                        </div>
+                        <form action="index.php" method="POST" class="shrink-0">
+                            <input type="hidden" name="action" value="toggle_registration">
+                            <input type="hidden" name="registration_enabled" value="<?php echo $registrationEnabled ? '0' : '1'; ?>">
+                            <button type="submit" 
+                                    class="px-3 py-1.5 rounded-lg text-[10px] uppercase font-extrabold tracking-wider transition <?php echo $registrationEnabled ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' : 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'; ?>">
+                                <?php echo $registrationEnabled ? 'Active / Open' : 'Closed'; ?>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Create Franchise Form -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">

@@ -134,6 +134,12 @@ $options = [
 
 try {
      $pdo = new PDO($dsn, $user, $pass, $options);
+     // Auto-upgrade database schema to support registration toggle
+     try {
+         $pdo->exec("ALTER TABLE auction_state ADD COLUMN registration_enabled TINYINT(1) DEFAULT 1");
+     } catch (\PDOException $ex) {
+         // Ignore "duplicate column" error
+     }
 } catch (\PDOException $e) {
      // If the database doesn't exist yet, we allow a fallback connection to establish it in setup.php
      if ($e->getCode() == 1049) { 

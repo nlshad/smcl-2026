@@ -3,15 +3,24 @@
 session_start();
 require_once '../config/db.php';
 
+// Fetch registration status
+$stmt = $pdo->prepare("SELECT registration_enabled FROM auction_state WHERE id = 1");
+$stmt->execute();
+$regStatus = $stmt->fetch();
+$registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : true;
+
 $successMsg = '';
 $errorMsg = '';
 
 // Handle Registration Form Post
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name'] ?? '');
-    $mobile = trim($_POST['mobile'] ?? '');
-    $place = trim($_POST['place'] ?? '');
-    $role = trim($_POST['role'] ?? '');
+    if (!$registrationEnabled) {
+        $errorMsg = '❌ Registration is currently closed by Admin.';
+    } else {
+        $name = trim($_POST['name'] ?? '');
+        $mobile = trim($_POST['mobile'] ?? '');
+        $place = trim($_POST['place'] ?? '');
+        $role = trim($_POST['role'] ?? '');
 
     // Form Validations
     if (empty($name) || empty($mobile) || empty($place) || empty($role)) {
@@ -80,6 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $errorMsg = '❌ Database Error: ' . $e->getMessage();
         }
     }
+}
 }
 ?>
 <!DOCTYPE html>
@@ -159,8 +169,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <!-- Form Container -->
-        <form action="register.php" method="POST" enctype="multipart/form-data" class="p-6 md:p-8 max-w-xl mx-auto space-y-6">
+        <?php if (!$registrationEnabled): ?>
+            <!-- Disabled Notice -->
+            <div class="p-10 text-center space-y-5">
+                <div class="w-16 h-16 bg-red-950/20 border border-red-500/30 text-red-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-ban font-bold"></i>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-xl font-bold text-white tracking-tight">Public Registrations Closed</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed max-w-md mx-auto">
+                        Player registrations for the SMCL 2026 Season are currently closed. Please contact the league administrators or your franchise managers for more information.
+                    </p>
+                </div>
+                <div class="pt-2">
+                    <a href="index.php" class="bg-white/5 border border-white/10 hover:border-white/20 text-[10px] font-bold uppercase tracking-wider px-6 py-3 rounded-xl text-gray-300 hover:text-white transition inline-block">
+                        <i class="fa-solid fa-arrow-left mr-1.5 text-[10px]"></i> Back to Live Auction
+                    </a>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- Form Container -->
+            <form action="register.php" method="POST" enctype="multipart/form-data" class="p-6 md:p-8 max-w-xl mx-auto space-y-6">
             
             <div class="space-y-6">
                 <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2 flex items-center gap-2">
@@ -229,6 +258,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </button>
             </div>
         </form>
+        <?php endif; ?>
     </div>
 
     <!-- Script for File Input Preview -->

@@ -2,6 +2,12 @@
 // public/index.php
 session_start();
 require_once '../config/db.php';
+
+// Fetch registration status
+$stmt = $pdo->prepare("SELECT registration_enabled FROM auction_state WHERE id = 1");
+$stmt->execute();
+$regStatus = $stmt->fetch();
+$registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,11 +44,17 @@ require_once '../config/db.php';
             </div>
 
             <!-- Login Quick Redirects -->
-            <div class="flex gap-2">
-                <a href="register.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-3.5 py-2 rounded-lg transition">
-                    Register
-                </a>
-                <a href="login.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-3.5 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5">
+            <div class="flex gap-2 text-xs">
+                <?php if ($registrationEnabled): ?>
+                    <a href="register.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-3.5 py-2 rounded-lg transition flex items-center justify-center">
+                        Register
+                    </a>
+                <?php else: ?>
+                    <span class="text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 px-3.5 py-2 rounded-lg cursor-not-allowed flex items-center justify-center">
+                        Closed
+                    </span>
+                <?php endif; ?>
+                <a href="login.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-3.5 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center justify-center">
                     Portals
                 </a>
             </div>

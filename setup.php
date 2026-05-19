@@ -100,6 +100,7 @@ try {
         current_bid_amount INT DEFAULT 0,
         current_highest_bidder_id INT NULL,
         status ENUM('Idle', 'Bidding', 'Paused') DEFAULT 'Idle',
+        registration_enabled TINYINT(1) DEFAULT 1,
         last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (current_player_id) REFERENCES players(id) ON DELETE SET NULL,
         FOREIGN KEY (current_highest_bidder_id) REFERENCES teams(id) ON DELETE SET NULL
