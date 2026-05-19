@@ -236,7 +236,7 @@ try {
                         <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-baseball-bat-ball text-base text-gray-400"></i> Player Registrations
                         </h3>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Accept Payment references & Set Base Prices</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Review Registrations & Set Base Prices</p>
                     </div>
                     <span class="text-xs font-bold text-gray-400 bg-white/5 border border-white/5 px-2.5 py-1 rounded-md">
                         Total Players: <?php echo count($players); ?>
@@ -250,7 +250,7 @@ try {
                             <tr class="border-b border-white/5 text-gray-500 font-semibold uppercase tracking-wider">
                                 <th class="pb-3 pr-2">Player</th>
                                 <th class="pb-3 px-2">Role/Hometown</th>
-                                <th class="pb-3 px-2 font-mono">UPI UTR Code</th>
+                                <th class="pb-3 px-2 font-mono">Registration ID</th>
                                 <th class="pb-3 px-2">Status</th>
                                 <th class="pb-3 pl-2 text-right">Actions</th>
                             </tr>
@@ -544,9 +544,9 @@ try {
                     </select>
                 </div>
 
-                <!-- Payment UTR -->
+                <!-- Registration Reference ID -->
                 <div>
-                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">UPI Payment UTR</label>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Registration Reference ID</label>
                     <input type="text" name="utr" id="edit_player_utr" required
                            class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
                 </div>

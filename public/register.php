@@ -12,73 +12,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mobile = trim($_POST['mobile'] ?? '');
     $place = trim($_POST['place'] ?? '');
     $role = trim($_POST['role'] ?? '');
-    $utr = trim($_POST['utr'] ?? '');
 
     // Form Validations
-    if (empty($name) || empty($mobile) || empty($place) || empty($role) || empty($utr)) {
+    if (empty($name) || empty($mobile) || empty($place) || empty($role)) {
         $errorMsg = '❌ All fields are required.';
     } elseif (!preg_match('/^[0-9]{10}$/', $mobile)) {
         $errorMsg = '❌ Mobile number must be exactly 10 digits.';
-    } elseif (strlen($utr) < 8 || strlen($utr) > 20) {
-        $errorMsg = '❌ Please enter a valid UPI UTR / Reference number (8-20 characters).';
     } else {
         try {
-            // Check if UTR already exists
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE payment_utr = ?");
-            $stmt->execute([$utr]);
-            if ($stmt->fetchColumn() > 0) {
-                $errorMsg = '❌ This UPI UTR / Reference number has already been registered.';
+            // Auto-generate unique registration reference (UTR)
+            $utr = 'REG-' . strtoupper(bin2hex(random_bytes(6)));
+            
+            // File Upload Handling
+            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                $errorMsg = '❌ Please select a profile image to upload.';
             } else {
-                // File Upload Handling
-                if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-                    $errorMsg = '❌ Please select a profile image to upload.';
+                $fileTmpPath = $_FILES['profile_image']['tmp_name'];
+                $fileName = $_FILES['profile_image']['name'];
+                $fileSize = $_FILES['profile_image']['size'];
+                $fileType = $_FILES['profile_image']['type'];
+                
+                // Verify size (Max 2MB)
+                $maxSize = 2 * 1024 * 1024;
+                if ($fileSize > $maxSize) {
+                    $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
                 } else {
-                    $fileTmpPath = $_FILES['profile_image']['tmp_name'];
-                    $fileName = $_FILES['profile_image']['name'];
-                    $fileSize = $_FILES['profile_image']['size'];
-                    $fileType = $_FILES['profile_image']['type'];
+                    // Strict MIME-type checking
+                    $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+                    // Use mime_content_type if available, otherwise fallback
+                    $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
                     
-                    // Verify size (Max 2MB)
-                    $maxSize = 2 * 1024 * 1024;
-                    if ($fileSize > $maxSize) {
-                        $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
+                    if (!in_array($actualMime, $allowedMimes)) {
+                        $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
                     } else {
-                        // Strict MIME-type checking
-                        $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-                        // Use mime_content_type if available, otherwise fallback
-                        $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
+                        // Extract file extension safely
+                        $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                        if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
+                            $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
+                        }
                         
-                        if (!in_array($actualMime, $allowedMimes)) {
-                            $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
+                        // Generate unique sanitized name
+                        $newFileName = uniqid('player_', true) . '.' . $fileExt;
+                        $uploadDir = __DIR__ . '/uploads/';
+                        
+                        // Check if directory exists
+                        if (!is_dir($uploadDir)) {
+                            mkdir($uploadDir, 0777, true);
+                        }
+                        
+                        $destPath = $uploadDir . $newFileName;
+                        
+                        if (move_uploaded_file($fileTmpPath, $destPath)) {
+                            // Save to Database
+                            $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
+                            $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
+                            
+                            $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                            // Reset form values
+                            $name = $mobile = $place = $role = '';
                         } else {
-                            // Extract file extension safely
-                            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                            if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
-                                $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
-                            }
-                            
-                            // Generate unique sanitized name
-                            $newFileName = uniqid('player_', true) . '.' . $fileExt;
-                            $uploadDir = __DIR__ . '/uploads/';
-                            
-                            // Check if directory exists
-                            if (!is_dir($uploadDir)) {
-                                mkdir($uploadDir, 0777, true);
-                            }
-                            
-                            $destPath = $uploadDir . $newFileName;
-                            
-                            if (move_uploaded_file($fileTmpPath, $destPath)) {
-                                // Save to Database
-                                $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
-                                $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
-                                
-                                $successMsg = "🎉 Registration submitted successfully! Your payment reference (UTR: $utr) is queued for Admin approval.";
-                                // Reset form values
-                                $name = $mobile = $place = $role = $utr = '';
-                            } else {
-                                $errorMsg = '❌ Image upload failed. Please try again.';
-                            }
+                            $errorMsg = '❌ Image upload failed. Please try again.';
                         }
                     }
                 }
@@ -166,13 +159,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <!-- Form & Payment Container (Split layout) -->
-        <form action="register.php" method="POST" enctype="multipart/form-data" class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <!-- Form Container -->
+        <form action="register.php" method="POST" enctype="multipart/form-data" class="p-6 md:p-8 max-w-xl mx-auto space-y-6">
             
-            <!-- Left Side: Data Entry Form (7 cols) -->
-            <div class="md:col-span-7 space-y-6">
+            <div class="space-y-6">
                 <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-baseball-bat-ball text-gold-400 text-lg"></i> Player Details
+                    <i class="fa-solid fa-baseball-bat-ball text-gold-400 text-lg"></i> Player Registration Details
                 </h3>
 
                 <!-- Name Input -->
@@ -229,78 +221,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Side: UPI Payment & QR Code (5 cols) -->
-            <div class="md:col-span-5 bg-black/40 rounded-xl p-6 border border-white/5 flex flex-col justify-between">
-                <div class="space-y-4">
-                    <h3 class="text-lg font-bold text-gold-400 border-b border-white/5 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-credit-card text-gold-400 text-lg"></i> Payment Verification
-                    </h3>
-                    <p class="text-xs text-gray-400 leading-relaxed">
-                        To join the SMCL 2026 Auction pool, pay a registration fee of <strong class="text-gold-300 font-bold">₹250</strong>. Scan the QR code using any UPI app (GPAY, PhonePe, Paytm).
-                    </p>
-
-                    <!-- UPI QR Box -->
-                    <div class="bg-white p-4 rounded-xl max-w-[200px] mx-auto border-2 border-gold-500 shadow-lg relative group">
-                        <!-- Simulated QR Code SVG -->
-                        <svg viewBox="0 0 100 100" class="w-full h-full text-black">
-                            <!-- Background Grid Mock -->
-                            <rect width="100" height="100" fill="white"/>
-                            <!-- Position Anchors -->
-                            <rect x="5" y="5" width="25" height="25" fill="black"/>
-                            <rect x="8" y="8" width="19" height="19" fill="white"/>
-                            <rect x="12" y="12" width="11" height="11" fill="black"/>
-
-                            <rect x="70" y="5" width="25" height="25" fill="black"/>
-                            <rect x="73" y="8" width="19" height="19" fill="white"/>
-                            <rect x="77" y="12" width="11" height="11" fill="black"/>
-
-                            <rect x="5" y="70" width="25" height="25" fill="black"/>
-                            <rect x="8" y="73" width="19" height="19" fill="white"/>
-                            <rect x="12" y="77" width="11" height="11" fill="black"/>
-
-                            <!-- QR Pattern Matrix -->
-                            <rect x="35" y="10" width="10" height="5" fill="black"/>
-                            <rect x="50" y="5" width="15" height="10" fill="black"/>
-                            <rect x="35" y="20" width="15" height="10" fill="black"/>
-                            
-                            <rect x="10" y="35" width="5" height="15" fill="black"/>
-                            <rect x="25" y="45" width="15" height="5" fill="black"/>
-                            <rect x="5" y="55" width="15" height="10" fill="black"/>
-
-                            <rect x="45" y="35" width="20" height="20" fill="black"/>
-                            <rect x="50" y="40" width="10" height="10" fill="white"/>
-                            <rect x="75" y="35" width="20" height="10" fill="black"/>
-
-                            <rect x="35" y="70" width="15" height="15" fill="black"/>
-                            <rect x="55" y="80" width="25" height="15" fill="black"/>
-                            <rect x="80" y="60" width="15" height="35" fill="black"/>
-                            <rect x="85" y="65" width="5" height="10" fill="white"/>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition duration-300 rounded-xl">
-                            <span class="text-[10px] text-gold-400 font-bold text-center px-2">UPI ID: smcl2026@upi</span>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold bg-white/5 px-2.5 py-1 rounded border border-white/5 inline-block">
-                            UPI ID: smcl2026@upi
-                        </span>
-                    </div>
-
-                    <!-- UTR Field -->
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">UPI UTR / 12-Digit Reference No.</label>
-                        <input type="text" name="utr" required placeholder="e.g. 612345678901"
-                               class="w-full bg-black/60 border border-gold-500/30 rounded-xl px-4 py-3 text-sm text-gold-300 font-mono focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/30 transition placeholder-gray-700"
-                               value="<?php echo htmlspecialchars($utr ?? ''); ?>">
-                    </div>
-                </div>
 
                 <!-- Submit Button -->
                 <button type="submit"
-                        class="w-full bg-gradient-to-r from-gold-500 to-amber-600 text-black font-extrabold uppercase text-xs tracking-wider py-4 px-6 rounded-xl hover:from-gold-400 hover:to-gold-500 transition duration-300 mt-6 shadow-lg shadow-gold-500/10 active:scale-95">
+                        class="w-full bg-gradient-to-r from-gold-500 to-amber-600 text-black font-extrabold uppercase text-xs tracking-wider py-4 px-6 rounded-xl hover:from-gold-400 hover:to-gold-500 transition duration-300 mt-2 shadow-lg shadow-gold-500/10 active:scale-95">
                     Submit Registration
                 </button>
             </div>
