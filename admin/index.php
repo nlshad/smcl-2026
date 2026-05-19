@@ -112,9 +112,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         } elseif ($action === 'delete_team') {
             $teamId = (int)$_POST['team_id'];
-            $stmt = $pdo->prepare("DELETE FROM teams WHERE id = ?");
+            
+            // Security: Check if team has players before deleting
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE team_id = ? AND auction_status = 'Sold'");
             $stmt->execute([$teamId]);
-            $successMsg = "🗑️ Franchise Team deleted successfully!";
+            if ($stmt->fetchColumn() > 0) {
+                $errorMsg = "❌ Cannot delete Franchise. Please release all players first.";
+            } else {
+                $stmt = $pdo->prepare("DELETE FROM teams WHERE id = ?");
+                $stmt->execute([$teamId]);
+                $successMsg = "🗑️ Franchise Team deleted successfully!";
+            }
+        } elseif ($action === 'release_player') {
+            $playerId = (int)$_POST['player_id'];
+            
+            // Release player
+            $stmt = $pdo->prepare("UPDATE players SET team_id = NULL, auction_status = 'Available', sold_price = NULL WHERE id = ?");
+            $stmt->execute([$playerId]);
+            
+            // Recalculate squad sizes and purses
+            $pdo->exec("
+                UPDATE teams t 
+                SET 
+                    current_squad_size = (SELECT COUNT(id) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'),
+                    remaining_purse = total_purse - COALESCE((SELECT SUM(sold_price) FROM players p WHERE p.team_id = t.id AND p.auction_status = 'Sold'), 0)
+            ");
+            
+            $successMsg = "🟢 Player released from Franchise successfully!";
+        }
         } elseif ($action === 'edit_team') {
             $teamId = (int)$_POST['team_id'];
             $teamName = trim($_POST['team_name'] ?? '');
@@ -428,10 +453,13 @@ try {
                         <?php else: ?>
                             <?php foreach ($teams as $t): ?>
                                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition duration-200" onclick="openFranchiseDetailsModal(<?php echo $t['id']; ?>)">
                                         <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm">
                                         <div>
-                                            <div class="font-bold text-white"><?php echo htmlspecialchars($t['team_name']); ?></div>
+                                            <div class="font-bold text-white hover:text-gold-400 transition flex items-center gap-1">
+                                                <?php echo htmlspecialchars($t['team_name']); ?>
+                                                <i class="fa-solid fa-up-right-from-square text-[8px] text-gray-500"></i>
+                                            </div>
                                             <div class="text-[10px] text-gray-500 mt-1">
                                                 Roster: <strong class="text-gray-300 font-bold"><?php echo $t['current_squad_size']; ?>/<?php echo $t['max_squad_size']; ?></strong> 
                                                 | User: <strong class="text-gold-500 font-mono"><?php echo htmlspecialchars($t['manager_username']); ?></strong>
@@ -445,15 +473,18 @@ try {
                                         </div>
                                         <div class="flex items-center gap-1.5">
                                             <!-- Edit Team -->
-                                            <button onclick='openTeamEditModal(<?php echo json_encode($t, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                            <button onclick="event.stopPropagation(); openTeamEditModal(<?php echo htmlspecialchars(json_encode($t, JSON_HEX_APOS | JSON_HEX_QUOT)); ?>)"
                                                     class="bg-blue-950/40 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1">
                                                 <i class="fa-solid fa-pen text-[10px]"></i> Edit
                                             </button>
                                             <!-- Delete Team -->
-                                            <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to delete team <?php echo htmlspecialchars($t['team_name'], ENT_QUOTES); ?>? This will release all their players.');" class="inline">
+                                            <form action="index.php" method="POST" 
+                                                  onsubmit="<?php echo $t['current_squad_size'] > 0 ? "alert('Cannot delete Franchise. You must release all players first.'); return false;" : "return confirm('Are you sure you want to delete team " . htmlspecialchars($t['team_name'], ENT_QUOTES) . "?');"; ?>" 
+                                                  class="inline" onclick="event.stopPropagation();">
                                                 <input type="hidden" name="team_id" value="<?php echo $t['id']; ?>">
                                                 <button type="submit" name="action" value="delete_team"
-                                                        class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1">
+                                                        class="<?php echo $t['current_squad_size'] > 0 ? 'bg-zinc-800 border border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400'; ?> font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1"
+                                                        <?php if ($t['current_squad_size'] > 0) echo 'title="Release all players to delete"'; ?>>
                                                     <i class="fa-solid fa-trash-can text-[10px]"></i> Delete
                                                  </button>
                                             </form>
@@ -691,8 +722,158 @@ try {
         </div>
     </div>
 
+    <!-- Franchise Details Modal -->
+    <div id="franchiseDetailsModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full glass-panel rounded-2xl p-6 border border-gold-500/20 max-h-[90vh] overflow-y-auto">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <img id="view_team_logo" src="../public/uploads/team_placeholder.jpg" class="w-10 h-10 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-md">
+                    <div>
+                        <h3 id="view_team_name" class="text-base font-black uppercase text-gold-400 tracking-tight">Franchise Details</h3>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Roster & Financial Summary</p>
+                    </div>
+                </div>
+                <button onclick="closeFranchiseDetailsModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-7 h-7 rounded-full hover:bg-white/5 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Team Stats Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Purse Budget</div>
+                    <div id="view_team_total_purse" class="text-xs font-black text-white font-mono">₹0</div>
+                </div>
+                <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Purse Remaining</div>
+                    <div id="view_team_remaining_purse" class="text-xs font-black text-gold-400 font-mono">₹0</div>
+                </div>
+                <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Squad Size</div>
+                    <div id="view_team_squad_size" class="text-xs font-black text-white">0 / 15</div>
+                </div>
+                <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Manager</div>
+                    <div id="view_team_username" class="text-xs font-black text-gold-500 font-mono">N/A</div>
+                </div>
+            </div>
+
+            <!-- Team Players Roster Section -->
+            <div>
+                <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-users text-gray-500"></i> Purchased Roster
+                </h4>
+
+                <div class="max-h-80 overflow-y-auto pr-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 text-[9px] uppercase tracking-wider text-gray-500">
+                                <th class="py-2.5 font-bold">Player</th>
+                                <th class="py-2.5 font-bold">Role</th>
+                                <th class="py-2.5 font-bold text-right">Sold Price</th>
+                                <th class="py-2.5 font-bold text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="view_team_players_tbody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <div class="flex justify-end pt-4 border-t border-white/5 mt-6">
+                <button onclick="closeFranchiseDetailsModal()" class="bg-zinc-900 border border-white/5 text-gray-400 font-bold uppercase text-[10px] tracking-wider py-2.5 px-6 rounded-xl hover:bg-white/5 transition">
+                    Close Details
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modals Script Control -->
     <script>
+    async function openFranchiseDetailsModal(teamId) {
+        try {
+            const response = await fetch(`../api/get_team_details.php?team_id=${teamId}`);
+            const data = await response.json();
+            
+            if (!data.success) {
+                alert(data.error || 'Failed to fetch franchise details.');
+                return;
+            }
+
+            const team = data.team;
+            const players = data.players;
+
+            // Populate statistics
+            document.getElementById('view_team_logo').src = team.logo ? `../public/uploads/${team.logo}` : '../public/uploads/team_placeholder.jpg';
+            document.getElementById('view_team_name').innerText = team.team_name;
+            document.getElementById('view_team_total_purse').innerText = '₹' + Number(team.total_purse).toLocaleString('en-IN');
+            document.getElementById('view_team_remaining_purse').innerText = '₹' + Number(team.remaining_purse).toLocaleString('en-IN');
+            document.getElementById('view_team_squad_size').innerText = `${team.current_squad_size} / ${team.max_squad_size}`;
+            document.getElementById('view_team_username').innerText = team.owner_name;
+
+            // Populate roster table
+            const tbody = document.getElementById('view_team_players_tbody');
+            tbody.innerHTML = '';
+
+            if (players.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-xs text-gray-500 uppercase font-semibold">
+                            No players purchased yet.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                players.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-white/5 text-xs hover:bg-white/5 transition duration-150";
+                    
+                    const imgUrl = p.profile_image ? `../public/uploads/${p.profile_image}` : '../public/uploads/player_placeholder.jpg';
+                    
+                    tr.innerHTML = `
+                        <td class="py-3 flex items-center gap-2.5">
+                            <img src="${imgUrl}" class="w-8.5 h-8.5 rounded object-cover bg-black/40 border border-white/10 shadow-sm">
+                            <span class="font-bold text-white">${escapeHtml(p.name)}</span>
+                        </td>
+                        <td class="py-3 text-gray-300 uppercase tracking-wider font-semibold text-[10px]">
+                            ${escapeHtml(p.role)}
+                        </td>
+                        <td class="py-3 font-bold text-gold-400 font-mono text-right">
+                            ₹${Number(p.sold_price).toLocaleString('en-IN')}
+                        </td>
+                        <td class="py-3 text-center">
+                            <form action="index.php" method="POST" onsubmit="return confirm('Are you sure you want to release ${escapeHtml(p.name)} from ${escapeHtml(team.team_name)}?');" class="inline">
+                                <input type="hidden" name="action" value="release_player">
+                                <input type="hidden" name="player_id" value="${p.id}">
+                                <button type="submit" class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 mx-auto">
+                                    <i class="fa-solid fa-circle-minus"></i> Release
+                                </button>
+                            </form>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('franchiseDetailsModal').classList.remove('hidden');
+
+        } catch (err) {
+            console.error(err);
+            alert('An error occurred while loading franchise details.');
+        }
+    }
+
+    function closeFranchiseDetailsModal() {
+        document.getElementById('franchiseDetailsModal').classList.add('hidden');
+    }
+
+    function escapeHtml(string) {
+        return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
     function openPlayerEditModal(player) {
         document.getElementById('edit_player_id').value = player.id;
         document.getElementById('edit_player_name').value = player.name;
