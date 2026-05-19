@@ -359,27 +359,7 @@ try {
 
             <!-- Right Side: Teams List & Creation (4 Cols) -->
             <div class="lg:col-span-4 space-y-6">
-                <!-- Registration Status Control -->
-                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
-                    <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
-                        <i class="fa-solid fa-users-gear text-base text-gray-400"></i> Registration Settings
-                    </h3>
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-xs font-bold text-white">Public Registration</div>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Toggle open/closed status for new player registrations</p>
-                        </div>
-                        <form action="index.php" method="POST" class="shrink-0">
-                            <input type="hidden" name="action" value="toggle_registration">
-                            <input type="hidden" name="registration_enabled" value="<?php echo $registrationEnabled ? '0' : '1'; ?>">
-                            <button type="submit" 
-                                    class="px-3 py-1.5 rounded-lg text-[10px] uppercase font-extrabold tracking-wider transition <?php echo $registrationEnabled ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' : 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'; ?>">
-                                <?php echo $registrationEnabled ? 'Active / Open' : 'Closed'; ?>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
+                
                 <!-- Add Team Toggle Button -->
                 <button id="add-team-btn" onclick="toggleAddTeamForm()" class="w-full bg-gradient-to-r from-gold-500/10 to-amber-500/10 border border-gold-500/35 hover:border-gold-500/50 text-gold-400 hover:text-gold-300 font-extrabold uppercase text-[10px] tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-500/15 transition duration-200 shadow-md">
                     <i class="fa-solid fa-plus-circle text-xs text-gold-400"></i> Add Franchise Team
@@ -475,7 +455,7 @@ try {
                                                 <button type="submit" name="action" value="delete_team"
                                                         class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-bold px-2 py-1 rounded transition text-[9px] uppercase tracking-wider flex items-center gap-1">
                                                     <i class="fa-solid fa-trash-can text-[10px]"></i> Delete
-                                                </button>
+                                                 </button>
                                             </form>
                                         </div>
                                     </div>
@@ -485,8 +465,28 @@ try {
                     </div>
                 </div>
 
-            </div>
+                <!-- Registration Status Control -->
+                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
+                    <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
+                        <i class="fa-solid fa-users-gear text-base text-gray-400"></i> Registration Settings
+                    </h3>
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-xs font-bold text-white">Public Registration</div>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Toggle open/closed status for new player registrations</p>
+                        </div>
+                        <form action="index.php" method="POST" class="shrink-0">
+                            <input type="hidden" name="action" value="toggle_registration">
+                            <input type="hidden" name="registration_enabled" value="<?php echo $registrationEnabled ? '0' : '1'; ?>">
+                            <button type="submit" 
+                                    class="px-3 py-1.5 rounded-lg text-[10px] uppercase font-extrabold tracking-wider transition <?php echo $registrationEnabled ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' : 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'; ?>">
+                                <?php echo $registrationEnabled ? 'Active / Open' : 'Closed'; ?>
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
+            </div>
         </div>
 
     </main>
