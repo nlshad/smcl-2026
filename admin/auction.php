@@ -64,7 +64,7 @@ try {
         <!-- LEFT SIDE: Available Players to Bring to Block (4 Cols) -->
         <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col max-h-[580px]">
             <div class="border-b border-white/5 pb-3 mb-4">
-                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-baseball-bat-ball text-gold-400"></i> Available Pool</h3>
+                <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5"><i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available Pool</h3>
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Select and bring player to block</p>
             </div>
 
@@ -83,7 +83,7 @@ try {
                                 </div>
                                 <div>
                                     <div class="font-bold text-white text-xs group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
-                                     <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5"><?php echo $p['role']; ?> | <span class="inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></span></div>
+                                     <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5"><?php echo $p['role']; ?> | <span class="inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gray-500 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></span></div>
                                 </div>
                             </div>
                             
@@ -129,7 +129,7 @@ try {
                         </span>
                         <h2 class="text-xl font-bold text-white mt-1.5 tracking-tight" id="player-name">---</h2>
                         <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-location-dot text-gold-400"></i>
+                            <i class="fa-solid fa-location-dot text-gray-500"></i>
                             <span id="player-place">Hometown</span>
                         </p>
                     </div>

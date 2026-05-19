@@ -25,7 +25,7 @@ if (!isset($uploadPath)) {
             // Set profile info
             document.getElementById('modal-player-image').src = p.profile_image ? "<?php echo $uploadPath; ?>" + p.profile_image : "<?php echo $uploadPath; ?>player_placeholder.jpg";
             document.getElementById('modal-player-name').innerText = p.name;
-            document.getElementById('modal-player-details').innerHTML = `${p.role.toUpperCase()} &bull; <i class="fa-solid fa-location-dot text-gold-400 text-[10px] inline-block align-middle mr-0.5"></i> ${p.place}`;
+            document.getElementById('modal-player-details').innerHTML = `${p.role.toUpperCase()} &bull; <i class="fa-solid fa-location-dot text-gray-500 text-[10px] inline-block align-middle mr-0.5"></i> ${p.place}`;
             document.getElementById('modal-base-price').innerText = "₹" + p.base_price;
             
             const statusTag = document.getElementById('modal-player-status-tag');
@@ -228,7 +228,7 @@ if (!isset($uploadPath)) {
             <!-- Bid History Section -->
             <div id="modal-bid-history-section" class="space-y-3">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-2">
-                    <i class="fa-solid fa-chart-line text-xs text-gold-400"></i> Complete Bidding Timeline
+                    <i class="fa-solid fa-chart-line text-xs text-gray-400"></i> Complete Bidding Timeline
                 </h5>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="modal-bid-history-list">
                     <!-- populated dynamically -->
@@ -289,7 +289,7 @@ if (!isset($uploadPath)) {
             <!-- Purchased Players List -->
             <div class="space-y-3">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-2">
-                    <i class="fa-solid fa-baseball-bat-ball text-xs text-gold-400"></i> Franchise Roster
+                    <i class="fa-solid fa-baseball-bat-ball text-xs text-gray-400"></i> Franchise Roster
                 </h5>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="modal-team-players-list">
                     <!-- populated dynamically -->

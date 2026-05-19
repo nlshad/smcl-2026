@@ -147,7 +147,7 @@ try {
                         </span>
                         <h2 class="text-xl font-bold text-white mt-1.5 tracking-tight" id="player-name">Player Name</h2>
                         <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-location-dot text-gold-400"></i>
+                            <i class="fa-solid fa-location-dot text-gray-500"></i>
                             <span id="player-place">Wayanad</span>
                         </p>
                     </div>

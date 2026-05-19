@@ -197,7 +197,7 @@ try {
                 <div class="border-b border-white/5 pb-3 mb-4 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-bold text-gold-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-baseball-bat-ball text-base text-gold-400"></i> Player Registrations
+                            <i class="fa-solid fa-baseball-bat-ball text-base text-gray-400"></i> Player Registrations
                         </h3>
                         <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Accept Payment references & Set Base Prices</p>
                     </div>
@@ -242,7 +242,7 @@ try {
                                         <!-- Role / Hometown -->
                                         <td class="py-3.5 px-2">
                                             <div class="font-semibold text-gold-400"><?php echo htmlspecialchars($p['role']); ?></div>
-                                            <div class="text-[10px] text-gray-500 flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gold-400 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></div>
+                                            <div class="text-[10px] text-gray-500 flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-gray-500 text-[10px]"></i> <?php echo htmlspecialchars($p['place']); ?></div>
                                         </td>
 
                                         <!-- UTR Code -->
@@ -314,7 +314,7 @@ try {
                 <!-- Create Franchise Form -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
-                        <i class="fa-solid fa-plus text-base text-gold-400"></i> Add Franchise Team
+                        <i class="fa-solid fa-plus text-base text-gray-400"></i> Add Franchise Team
                     </h3>
 
                     <form action="index.php" method="POST" class="space-y-4">
@@ -359,7 +359,7 @@ try {
                 <!-- Franchise Standings Overview -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15">
                     <h3 class="text-base font-bold text-gold-400 border-b border-white/5 pb-2 mb-4 flex items-center gap-1.5">
-                        <i class="fa-solid fa-trophy text-base text-gold-400"></i> Franchise Standings
+                        <i class="fa-solid fa-trophy text-base text-gray-400"></i> Franchise Standings
                     </h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1">
                         <?php if (empty($teams)): ?>

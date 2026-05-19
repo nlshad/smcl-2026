@@ -91,7 +91,7 @@ require_once '../config/db.php';
                         </span>
                         <h2 class="text-2xl font-black text-white mt-2 tracking-tight" id="player-name">---</h2>
                         <p class="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-location-dot text-gold-400"></i>
+                            <i class="fa-solid fa-location-dot text-gray-500"></i>
                             <span id="player-place">Wayanad</span>
                         </p>
                     </div>
@@ -145,7 +145,7 @@ require_once '../config/db.php';
         <aside class="lg:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
             <div class="border-b border-white/5 pb-3 mb-4">
                 <h3 class="text-base font-bold text-gold-400 flex items-center gap-2">
-                    <i class="fa-solid fa-wallet text-base text-gold-400"></i> Franchise Purses
+                    <i class="fa-solid fa-wallet text-base text-gray-400"></i> Franchise Purses
                 </h3>
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Live Budget & Squad Sizes</p>
             </div>
@@ -163,7 +163,7 @@ require_once '../config/db.php';
             <div class="border-b border-white/5 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="text-base font-black text-gold-400 flex items-center gap-2 uppercase tracking-tight">
-                        <i class="fa-solid fa-clipboard-list text-base text-gold-400"></i> Completed Player Auctions
+                        <i class="fa-solid fa-clipboard-list text-base text-gray-400"></i> Completed Player Auctions
                     </h3>
                     <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all finalized player auctions</p>
                 </div>
