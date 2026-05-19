@@ -390,7 +390,6 @@ try {
                         // Update local left-hand panels
                         document.getElementById('manager-purse').innerText = "₹" + myRemainingPurse.toLocaleString();
                         document.getElementById('manager-squad-size').innerText = `${mySquadSize} / ${myMaxSquad}`;
-                        document.getElementById('squad-progress-bar').style.width = `${(mySquadSize / myMaxSquad) * 100}%`;
                     }
                 }
 
