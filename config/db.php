@@ -2,6 +2,9 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+// Set default timezone globally to Indian Standard Time (IST)
+date_default_timezone_set('Asia/Kolkata');
+
 // config/db.php
 
 $charset = 'utf8mb4';
