@@ -141,25 +141,23 @@ try {
                 </div>
             </div>
 
-            <!-- Squad Count Bento Card -->
-            <div class="glass-panel rounded-2xl p-6 border border-gold-500/15">
-                <div class="flex items-center justify-between">
+            <!-- Squad List Bento Card -->
+            <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col h-[380px]">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
                     <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Squad Roster Count</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Squad List</span>
                         <h3 class="text-2xl font-extrabold text-white mt-1" id="manager-squad-size">
                             <?php echo $team['current_squad_size']; ?> / <?php echo $team['max_squad_size']; ?>
                         </h3>
                     </div>
                     <span class="text-3xl">👥</span>
                 </div>
-                <!-- Mini Progress Bar -->
-                <div class="w-full bg-white/5 h-2 rounded-full mt-4 overflow-hidden border border-white/5">
-                    <div class="bg-gradient-to-r from-gold-500 to-amber-600 h-full rounded-full transition-all duration-500" 
-                         id="squad-progress-bar"
-                         style="width: <?php echo ($team['current_squad_size'] / $team['max_squad_size']) * 100; ?>%">
-                    </div>
+                <!-- Dynamic Player List Container -->
+                <div class="flex-grow overflow-y-auto space-y-2 pr-1" id="manager-squad-list">
+                    <!-- Fetched dynamically via JS -->
+                    <div class="text-center text-[10px] text-gray-500 py-6 uppercase font-semibold">No players purchased yet.</div>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-2">Maximum roster is limited to <?php echo $team['max_squad_size']; ?> slots.</p>
+                <p class="text-[10px] text-gray-400 mt-4 border-t border-white/5 pt-3">Maximum roster is limited to <?php echo $team['max_squad_size']; ?> slots.</p>
             </div>
         </div>
 
@@ -393,6 +391,33 @@ try {
                         document.getElementById('manager-purse').innerText = "₹" + myRemainingPurse.toLocaleString();
                         document.getElementById('manager-squad-size').innerText = `${mySquadSize} / ${myMaxSquad}`;
                         document.getElementById('squad-progress-bar').style.width = `${(mySquadSize / myMaxSquad) * 100}%`;
+                    }
+                }
+
+                // 2.5 Update My Squad Roster List
+                if (data.completed_players) {
+                    const myPlayers = data.completed_players.filter(p => p.auction_status === 'Sold' && parseInt(p.team_id) === myTeamId);
+                    const squadListEl = document.getElementById('manager-squad-list');
+                    squadListEl.innerHTML = '';
+                    
+                    if (myPlayers.length > 0) {
+                        myPlayers.forEach(p => {
+                            const row = document.createElement('div');
+                            row.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs";
+                            row.innerHTML = `
+                                <div class="flex items-center gap-3">
+                                    <img src="../public/uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md">
+                                    <div>
+                                        <span class="text-white font-extrabold block">${p.name}</span>
+                                        <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
+                                    </div>
+                                </div>
+                                <span class="text-gold-400 font-mono font-bold">₹${p.sold_price}</span>
+                            `;
+                            squadListEl.appendChild(row);
+                        });
+                    } else {
+                        squadListEl.innerHTML = `<div class="text-center text-[10px] text-gray-500 py-6 uppercase font-semibold">No players purchased yet.</div>`;
                     }
                 }
 
