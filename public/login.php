@@ -18,76 +18,71 @@ if (isset($_SESSION['manager_logged_in']) && $_SESSION['manager_logged_in'] === 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
-    $role = trim($_POST['role'] ?? '');
 
-    if (empty($username) || empty($password) || empty($role)) {
-        $errorMsg = '❌ Please enter username, password, and select a role.';
+    if (empty($username) || empty($password)) {
+        $errorMsg = '❌ Please enter both username and password.';
     } else {
         try {
-            if ($role === 'admin') {
-                // Auto-healing seeder: ensure admin accounts exist in the database with correct hashes
-                try {
-                    $adminsToSeed = [
-                        ['admin', 'SMCL@Admin#2026_Secure'],
-                        ['siraj', 'Siru@2026']
-                    ];
-                    foreach ($adminsToSeed as $adminInfo) {
-                        $uName = $adminInfo[0];
-                        $uPass = password_hash($adminInfo[1], PASSWORD_BCRYPT);
-                        $chk = $pdo->prepare("SELECT id, password FROM admins WHERE username = ?");
-                        $chk->execute([$uName]);
-                        $existing = $chk->fetch();
-                        if ($existing) {
-                            // If user is trying to log in with the correct credentials, ensure the DB hash matches
-                            if ($username === $uName && $password === $adminInfo[1] && !password_verify($password, $existing['password'])) {
-                                $up = $pdo->prepare("UPDATE admins SET password = ? WHERE id = ?");
-                                $up->execute([$uPass, $existing['id']]);
-                            }
-                        } else {
-                            $ins = $pdo->prepare("INSERT INTO admins (username, password) VALUES (?, ?)");
-                            $ins->execute([$uName, $uPass]);
+            // Auto-healing seeder: ensure admin accounts exist in the database with correct hashes
+            try {
+                $adminsToSeed = [
+                    ['admin', 'SMCL@Admin#2026_Secure'],
+                    ['siraj', 'Siru@2026']
+                ];
+                foreach ($adminsToSeed as $adminInfo) {
+                    $uName = $adminInfo[0];
+                    $uPass = password_hash($adminInfo[1], PASSWORD_BCRYPT);
+                    $chk = $pdo->prepare("SELECT id, password FROM admins WHERE username = ?");
+                    $chk->execute([$uName]);
+                    $existing = $chk->fetch();
+                    if ($existing) {
+                        // If user is trying to log in with the correct credentials, ensure the DB hash matches
+                        if ($username === $uName && $password === $adminInfo[1] && !password_verify($password, $existing['password'])) {
+                            $up = $pdo->prepare("UPDATE admins SET password = ? WHERE id = ?");
+                            $up->execute([$uPass, $existing['id']]);
                         }
+                    } else {
+                        $ins = $pdo->prepare("INSERT INTO admins (username, password) VALUES (?, ?)");
+                        $ins->execute([$uName, $uPass]);
                     }
-                } catch (Exception $e) {
-                    // Fail silent: setup.php will create the table if missing
                 }
-
-                // Admin Login
-                $stmt = $pdo->prepare("SELECT * FROM admins WHERE username = :username");
-                $stmt->execute(['username' => $username]);
-                $admin = $stmt->fetch();
-
-                if ($admin && password_verify($password, $admin['password'])) {
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_username'] = $admin['username'];
-                    $_SESSION['role'] = 'Admin';
-                    
-                    header("Location: ../admin/index.php");
-                    exit;
-                } else {
-                    $errorMsg = '❌ Invalid admin credentials.';
-                }
-            } elseif ($role === 'manager') {
-                // Manager Login
-                $stmt = $pdo->prepare("SELECT * FROM teams WHERE manager_username = :username");
-                $stmt->execute(['username' => $username]);
-                $team = $stmt->fetch();
-
-                if ($team && password_verify($password, $team['manager_password'])) {
-                    $_SESSION['manager_logged_in'] = true;
-                    $_SESSION['manager_username'] = $team['manager_username'];
-                    $_SESSION['team_id'] = (int)$team['id'];
-                    $_SESSION['team_name'] = $team['team_name'];
-                    $_SESSION['role'] = 'Manager';
-                    
-                    header("Location: ../manager/index.php");
-                    exit;
-                } else {
-                    $errorMsg = '❌ Invalid manager credentials.';
-                }
-            } else {
-                $errorMsg = '❌ Invalid role selected.';
+            } catch (Exception $e) {
+                // Fail silent: setup.php will create the table if missing
             }
+
+            // 1. Try Admin Login first
+            $stmt = $pdo->prepare("SELECT * FROM admins WHERE username = :username");
+            $stmt->execute(['username' => $username]);
+            $admin = $stmt->fetch();
+
+            if ($admin && password_verify($password, $admin['password'])) {
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_username'] = $admin['username'];
+                $_SESSION['role'] = 'Admin';
+                
+                header("Location: ../admin/index.php");
+                exit;
+            }
+
+            // 2. Try Manager Login next
+            $stmt = $pdo->prepare("SELECT * FROM teams WHERE manager_username = :username");
+            $stmt->execute(['username' => $username]);
+            $team = $stmt->fetch();
+
+            if ($team && password_verify($password, $team['manager_password'])) {
+                $_SESSION['manager_logged_in'] = true;
+                $_SESSION['manager_username'] = $team['manager_username'];
+                $_SESSION['team_id'] = (int)$team['id'];
+                $_SESSION['team_name'] = $team['team_name'];
+                $_SESSION['role'] = 'Manager';
+                
+                header("Location: ../manager/index.php");
+                exit;
+            }
+
+            // 3. If neither matches
+            $errorMsg = '❌ Invalid username or password.';
+
         } catch (Exception $e) {
             $errorMsg = '❌ Connection Error: ' . $e->getMessage();
         }
@@ -183,31 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                        class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/30 transition placeholder-gray-700">
             </div>
 
-            <!-- Role Selection (Radio Buttons styled like custom blocks) -->
-            <div>
-                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Your Role / Portal Access</label>
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Manager Option -->
-                    <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-white/10 bg-black/30 hover:bg-gold-950/10 hover:border-gold-500/30 cursor-pointer transition group">
-                        <input type="radio" name="role" value="manager" checked class="sr-only peer">
-                        <div class="text-center peer-checked:text-gold-400 transition">
-                            <i class="fa-solid fa-briefcase text-gold-400 text-lg block group-hover:scale-110 transition duration-200 mx-auto"></i>
-                            <span class="text-xs font-bold uppercase tracking-wider mt-1 block">Team Manager</span>
-                        </div>
-                        <div class="absolute inset-0 border border-gold-500 rounded-xl opacity-0 peer-checked:opacity-100 transition pointer-events-none"></div>
-                    </label>
 
-                    <!-- Admin Option -->
-                    <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-white/10 bg-black/30 hover:bg-gold-950/10 hover:border-gold-500/30 cursor-pointer transition group">
-                        <input type="radio" name="role" value="admin" class="sr-only peer">
-                        <div class="text-center peer-checked:text-gold-400 transition">
-                            <i class="fa-solid fa-crown text-gold-400 text-lg block group-hover:scale-110 transition duration-200 mx-auto"></i>
-                            <span class="text-xs font-bold uppercase tracking-wider mt-1 block">Super Admin</span>
-                        </div>
-                        <div class="absolute inset-0 border border-gold-500 rounded-xl opacity-0 peer-checked:opacity-100 transition pointer-events-none"></div>
-                    </label>
-                </div>
-            </div>
 
             <!-- Submit Button -->
             <button type="submit"
