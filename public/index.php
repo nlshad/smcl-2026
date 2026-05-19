@@ -20,22 +20,22 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 <body class="text-gray-150 min-h-screen flex flex-col justify-between">
     
     <!-- Top Navigation Bar -->
-    <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between z-10 sticky top-0">
+    <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between z-10 sticky top-0">
         <!-- Logo -->
-        <div class="flex items-center gap-3">
-            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-9 h-9 object-contain">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-8 h-8 sm:w-9 sm:h-9 object-contain">
             <div>
-                <h1 class="text-xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600">
+                <h1 class="text-lg sm:text-xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600 leading-none">
                     SMCL 2026
                 </h1>
-                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Panamaram Turf</p>
+                <p class="text-[8px] sm:text-[9px] text-gray-500 uppercase tracking-widest font-bold mt-0.5">Panamaram Turf</p>
             </div>
         </div>
 
         <!-- Live Auction Status Indicator -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
-                <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>
+                <i id="sound-icon" class="fa-solid fa-volume-high text-xs sm:text-sm text-gold-400"></i>
             </button>
 
             <div class="hidden sm:flex items-center gap-2 bg-black/40 border border-white/5 rounded-full px-3 py-1 text-xs">
@@ -44,17 +44,17 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             </div>
 
             <!-- Login Quick Redirects -->
-            <div class="flex gap-2 text-xs">
+            <div class="flex gap-1.5 sm:gap-2 text-[9px] sm:text-xs">
                 <?php if ($registrationEnabled): ?>
-                    <a href="register.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-3.5 py-2 rounded-lg transition flex items-center justify-center">
+                    <a href="register.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gold-950/40 border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500/40 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition flex items-center justify-center">
                         Register
                     </a>
                 <?php else: ?>
-                    <span class="text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 px-3.5 py-2 rounded-lg cursor-not-allowed flex items-center justify-center">
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg cursor-not-allowed flex items-center justify-center">
                         Closed
                     </span>
                 <?php endif; ?>
-                <a href="login.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-3.5 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center justify-center">
+                <a href="login.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center justify-center">
                     Portals
                 </a>
             </div>
@@ -86,7 +86,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             </div>
 
             <!-- Active Player Profile Bento (5 Cols) -->
-            <div id="player-card" class="hidden md:col-span-5 glass-panel rounded-2xl overflow-hidden border border-gold-500/15 flex flex-col justify-between relative group">
+            <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl overflow-hidden border border-gold-500/15 flex flex-col justify-between relative group">
                 <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-gold-500/10 to-transparent pointer-events-none"></div>
                 <!-- Profile Image -->
                 <div class="p-5 flex-grow flex flex-col items-center justify-center">
@@ -116,9 +116,9 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             </div>
 
             <!-- Active Bid Center Console Bento (7 Cols) -->
-            <div id="bid-card" class="hidden md:col-span-7 grid grid-rows-12 gap-6">
-                <!-- Current High Bid Box (7 rows equivalent) -->
-                <div class="row-span-7 glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col justify-between relative overflow-hidden">
+            <div id="bid-card" class="hidden col-span-12 md:col-span-7 flex flex-col gap-6">
+                <!-- Current High Bid Box -->
+                <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col justify-between relative overflow-hidden min-h-[200px] flex-grow">
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(218,165,32,0.06)_0%,transparent_50%)] pointer-events-none"></div>
                     <div>
                         <span class="text-[9px] uppercase tracking-widest font-bold text-gray-500">Active High Bid</span>
@@ -142,8 +142,8 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                     </div>
                 </div>
 
-                <!-- Live Bids History Timeline (5 rows equivalent) -->
-                <div class="row-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col">
+                <!-- Live Bids History Timeline -->
+                <div class="glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col min-h-[160px]">
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
                         <i class="fa-solid fa-chart-line text-xs text-gold-400"></i> Bid Flow History
                     </h3>

@@ -231,24 +231,24 @@ try {
 <body class="text-gray-255 min-h-screen flex flex-col justify-between">
 
     <!-- Header Navigation -->
-    <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div class="flex items-center gap-3">
-            <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-8 h-8 object-contain">
+    <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
             <div>
-                <h1 class="text-lg font-black uppercase tracking-tight text-white">
+                <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white leading-none">
                     Super Admin Console
                 </h1>
-                <p class="text-[9px] text-gold-500 uppercase tracking-widest font-bold">SMCL Tournament Control Centre</p>
+                <p class="text-[8px] sm:text-[9px] text-gold-500 uppercase tracking-widest font-bold mt-0.5">SMCL Tournament Control Centre</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
             <!-- Link to Live Bidding Desk -->
-            <a href="auction.php" class="text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-4 py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center gap-1.5">
-                <i class="fa-solid fa-microphone text-sm text-black"></i> Live Auction Room
+            <a href="auction.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gold-500 hover:bg-gold-400 text-black px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg transition font-extrabold shadow-md shadow-gold-500/5 flex items-center gap-1">
+                <i class="fa-solid fa-microphone text-xs text-black"></i> <span class="hidden xs:inline">Live </span>Auction Room
             </a>
             <!-- Logout -->
-            <a href="../public/logout.php" class="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-3.5 py-2 rounded-lg transition">
+            <a href="../public/logout.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-white/5 text-gray-400 hover:bg-white/5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition">
                 Logout
             </a>
         </div>

@@ -54,18 +54,18 @@ try {
     <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-3 pointer-events-none max-w-sm w-full"></div>
 
     <!-- Header Navigation -->
-    <header class="w-full glass-panel border-b border-gold-500/10 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div class="flex items-center gap-3">
-            <img src="../public/uploads/<?php echo htmlspecialchars($team['logo'] ? $team['logo'] : 'team_placeholder.jpg'); ?>" alt="Team Logo" class="w-8 h-8 object-contain bg-black/40 p-0.5 rounded border border-white/10">
+    <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <img src="../public/uploads/<?php echo htmlspecialchars($team['logo'] ? $team['logo'] : 'team_placeholder.jpg'); ?>" alt="Team Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain bg-black/40 p-0.5 rounded border border-white/10">
             <div>
-                <h1 class="text-lg font-black uppercase tracking-tight text-white">
+                <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white leading-none">
                     <?php echo htmlspecialchars($team['team_name']); ?>
                 </h1>
-                <p class="text-[9px] text-gold-500 uppercase tracking-widest font-bold">SMCL Franchise Manager Room</p>
+                <p class="text-[8px] sm:text-[9px] text-gold-500 uppercase tracking-widest font-bold mt-0.5">SMCL Franchise Manager Room</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
             <!-- League Logo Badge -->
             <div class="hidden sm:flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
                 <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-6.5 h-6 object-contain">
@@ -74,17 +74,17 @@ try {
 
             <!-- Sound Toggle -->
             <button id="sound-toggle-btn" onclick="toggleMute()" class="flex items-center justify-center bg-black/40 border border-gold-500/10 hover:border-gold-500/35 w-8 h-8 rounded-full text-xs transition duration-200" title="Toggle Sound Effects">
-                <i id="sound-icon" class="fa-solid fa-volume-high text-sm text-gold-400"></i>
+                <i id="sound-icon" class="fa-solid fa-volume-high text-xs sm:text-sm text-gold-400"></i>
             </button>
 
             <!-- Active Bidding Indicator -->
-            <div class="flex items-center gap-2 bg-black/40 border border-white/5 rounded-full px-3 py-1 text-xs">
-                <span class="w-2 h-2 rounded-full bg-gray-500 animate-pulse" id="status-light"></span>
-                <span class="text-gray-400 font-semibold tracking-wider uppercase text-[10px]" id="status-text">Arena Idle</span>
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-black/40 border border-white/5 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-xs">
+                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gray-500 animate-pulse" id="status-light"></span>
+                <span class="text-gray-400 font-semibold tracking-wider uppercase text-[8px] sm:text-[10px]" id="status-text">Arena Idle</span>
             </div>
 
             <!-- Logout -->
-            <a href="../public/logout.php" class="text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition">
+            <a href="../public/logout.php" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-red-950/20 border border-red-500/20 text-red-400 hover:bg-red-500/10 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-lg transition">
                 Logout
             </a>
         </div>
@@ -142,7 +142,7 @@ try {
             </div>
 
             <!-- Player Profile (5 Cols) -->
-            <div id="player-card" class="hidden md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
+            <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
                     <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
                         <img src="" id="player-image" alt="Player" class="w-full h-full object-cover">
@@ -165,7 +165,7 @@ try {
             </div>
 
             <!-- Bidding Action Controls (7 Cols) -->
-            <div id="bid-action-card" class="hidden md:col-span-7 space-y-6 flex flex-col justify-between">
+            <div id="bid-action-card" class="hidden col-span-12 md:col-span-7 space-y-6 flex flex-col justify-between">
                 
                 <!-- Bidding Panel -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15 flex-grow flex flex-col justify-between">
