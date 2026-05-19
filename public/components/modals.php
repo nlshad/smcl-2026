@@ -5,6 +5,28 @@ if (!isset($uploadPath)) {
     $uploadPath = "uploads/";
 }
 ?>
+<style>
+@keyframes goldShine {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.animate-gold-shine {
+    background-size: 200% auto;
+    animation: goldShine 3s linear infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.35; transform: scale(1); }
+    50% { opacity: 0.75; transform: scale(1.2); }
+}
+.animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+.gold-glow-text {
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.75));
+}
+</style>
 <script>
     // Open Player Details Modal Popup
     async function openPlayerDetailsModal(playerId) {
@@ -235,10 +257,10 @@ if (!isset($uploadPath)) {
                     <span class="text-[8px] uppercase tracking-widest text-gray-500 font-bold">Base Price</span>
                     <span class="block text-xs font-black text-gray-200 mt-1 font-mono" id="modal-base-price">₹0</span>
                 </div>
-                <div class="bg-gradient-to-b from-gold-500/10 to-transparent border border-gold-500/30 rounded-xl p-3 text-center relative overflow-hidden shadow-inner">
-                    <div class="absolute -right-3 -top-3 w-8 h-8 bg-gold-500/10 rounded-full blur-lg"></div>
+                <div class="bg-gradient-to-b from-gold-500/15 to-transparent border border-gold-500/40 rounded-xl p-3 text-center relative overflow-hidden shadow-inner flex flex-col justify-center min-h-[76px]">
+                    <div class="absolute -right-3 -top-3 w-10 h-10 bg-gold-500/20 rounded-full blur-md animate-pulse-glow"></div>
                     <span class="text-[8px] uppercase tracking-widest text-gold-400 font-bold">Final Price</span>
-                    <span class="block text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500 mt-0.5 font-mono" id="modal-sold-price">₹0</span>
+                    <span class="block text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-amber-400 to-gold-500 animate-gold-shine gold-glow-text mt-0.5 font-mono tracking-tighter" id="modal-sold-price">₹0</span>
                 </div>
                 <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
                     <span class="text-[8px] uppercase tracking-widest text-gray-500 font-bold">Winning Team</span>
