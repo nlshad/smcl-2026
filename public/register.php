@@ -30,85 +30,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errorMsg = '❌ Mobile number must be exactly 10 digits.';
     } else {
         try {
-            // Auto-generate unique registration reference (UTR)
-            $utr = 'REG-' . strtoupper(bin2hex(random_bytes(6)));
-            
-            // File Upload / Cropping Handling
-            $croppedData = $_POST['cropped_image_data'] ?? '';
-            
-            if (!empty($croppedData)) {
-                // Handle Base64 cropped image upload
-                // Format: data:image/jpeg;base64,/9j/4AAQSkZJRg...
-                if (preg_match('/^data:image\/(\w+);base64,/', $croppedData, $typeMatches)) {
-                    $imageType = strtolower($typeMatches[1]); // e.g. jpeg, png
-                    $fileExt = ($imageType === 'png') ? 'png' : 'jpg';
-                    
-                    $croppedData = substr($croppedData, strpos($croppedData, ',') + 1);
-                    $croppedData = base64_decode($croppedData);
-                    
-                    if ($croppedData === false) {
-                        $errorMsg = '❌ Invalid cropped image data.';
-                    } else {
-                        // Generate unique sanitized name
-                        $newFileName = uniqid('player_', true) . '.' . $fileExt;
-                        $uploadDir = __DIR__ . '/uploads/';
-                        
-                        if (!is_dir($uploadDir)) {
-                            mkdir($uploadDir, 0777, true);
-                        }
-                        
-                        $destPath = $uploadDir . $newFileName;
-                        
-                        if (file_put_contents($destPath, $croppedData)) {
-                            // Save to Database
-                            $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
-                            $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
-                            
-                            $successMsg = "🎉 Registration submitted successfully! Your cropped profile photo is queued for Admin approval.";
-                            $registeredPlayer = [
-                                'name' => $name,
-                                'mobile' => $mobile,
-                                'place' => $place,
-                                'role' => $role,
-                                'profile_image' => $newFileName,
-                                'utr' => $utr
-                            ];
-                            // Reset form values
-                            $name = $mobile = $place = $role = '';
-                        } else {
-                            $errorMsg = '❌ Saving cropped image failed. Please try again.';
-                        }
-                    }
-                } else {
-                    $errorMsg = '❌ Invalid image format.';
-                }
+            // Check if player with same mobile number already exists
+            $checkStmt = $pdo->prepare("SELECT id FROM players WHERE mobile = ? LIMIT 1");
+            $checkStmt->execute([$mobile]);
+            if ($checkStmt->fetch()) {
+                $errorMsg = '❌ A player is already registered with this mobile number.';
             } else {
-                // Fallback to standard file upload if cropper wasn't used
-                if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-                    $errorMsg = '❌ Please select a profile image to upload.';
-                } else {
-                    $fileTmpPath = $_FILES['profile_image']['tmp_name'];
-                    $fileName = $_FILES['profile_image']['name'];
-                    $fileSize = $_FILES['profile_image']['size'];
-                    $fileType = $_FILES['profile_image']['type'];
-                    
-                    // Verify size (Max 2MB)
-                    $maxSize = 2 * 1024 * 1024;
-                    if ($fileSize > $maxSize) {
-                        $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
-                    } else {
-                        // Strict MIME-type checking
-                        $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-                        $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
+                // Auto-generate unique registration reference (UTR)
+                $utr = 'REG-' . strtoupper(bin2hex(random_bytes(6)));
+                
+                // File Upload / Cropping Handling
+                $croppedData = $_POST['cropped_image_data'] ?? '';
+                
+                if (!empty($croppedData)) {
+                    // Handle Base64 cropped image upload
+                    // Format: data:image/jpeg;base64,/9j/4AAQSkZJRg...
+                    if (preg_match('/^data:image\/(\w+);base64,/', $croppedData, $typeMatches)) {
+                        $imageType = strtolower($typeMatches[1]); // e.g. jpeg, png
+                        $fileExt = ($imageType === 'png') ? 'png' : 'jpg';
                         
-                        if (!in_array($actualMime, $allowedMimes)) {
-                            $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
+                        $croppedData = substr($croppedData, strpos($croppedData, ',') + 1);
+                        $croppedData = base64_decode($croppedData);
+                        
+                        if ($croppedData === false) {
+                            $errorMsg = '❌ Invalid cropped image data.';
                         } else {
-                            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                            if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
-                                $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
-                            }
-                            
+                            // Generate unique sanitized name
                             $newFileName = uniqid('player_', true) . '.' . $fileExt;
                             $uploadDir = __DIR__ . '/uploads/';
                             
@@ -118,11 +65,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             
                             $destPath = $uploadDir . $newFileName;
                             
-                            if (move_uploaded_file($fileTmpPath, $destPath)) {
+                            if (file_put_contents($destPath, $croppedData)) {
+                                // Save to Database
                                 $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
                                 $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
                                 
-                                $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                                $successMsg = "🎉 Registration submitted successfully! Your cropped profile photo is queued for Admin approval.";
                                 $registeredPlayer = [
                                     'name' => $name,
                                     'mobile' => $mobile,
@@ -131,9 +79,68 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     'profile_image' => $newFileName,
                                     'utr' => $utr
                                 ];
+                                // Reset form values
                                 $name = $mobile = $place = $role = '';
                             } else {
-                                $errorMsg = '❌ Image upload failed. Please try again.';
+                                $errorMsg = '❌ Saving cropped image failed. Please try again.';
+                            }
+                        }
+                    } else {
+                        $errorMsg = '❌ Invalid image format.';
+                    }
+                } else {
+                    // Fallback to standard file upload if cropper wasn't used
+                    if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                        $errorMsg = '❌ Please select a profile image to upload.';
+                    } else {
+                        $fileTmpPath = $_FILES['profile_image']['tmp_name'];
+                        $fileName = $_FILES['profile_image']['name'];
+                        $fileSize = $_FILES['profile_image']['size'];
+                        $fileType = $_FILES['profile_image']['type'];
+                        
+                        // Verify size (Max 2MB)
+                        $maxSize = 2 * 1024 * 1024;
+                        if ($fileSize > $maxSize) {
+                            $errorMsg = '❌ Image size too large. Maximum limit is 2MB.';
+                        } else {
+                            // Strict MIME-type checking
+                            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+                            $actualMime = function_exists('mime_content_type') ? mime_content_type($fileTmpPath) : $fileType;
+                            
+                            if (!in_array($actualMime, $allowedMimes)) {
+                                $errorMsg = '❌ Invalid file type. Only JPG, JPEG, and PNG images are allowed.';
+                            } else {
+                                $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                                if (!in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
+                                    $fileExt = ($actualMime === 'image/png') ? 'png' : 'jpg';
+                                }
+                                
+                                $newFileName = uniqid('player_', true) . '.' . $fileExt;
+                                $uploadDir = __DIR__ . '/uploads/';
+                                
+                                if (!is_dir($uploadDir)) {
+                                    mkdir($uploadDir, 0777, true);
+                                }
+                                
+                                $destPath = $uploadDir . $newFileName;
+                                
+                                if (move_uploaded_file($fileTmpPath, $destPath)) {
+                                    $stmt = $pdo->prepare("INSERT INTO players (name, mobile, place, role, profile_image, payment_utr, payment_status, base_price) VALUES (?, ?, ?, ?, ?, ?, 'Pending', 100)");
+                                    $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
+                                    
+                                    $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                                    $registeredPlayer = [
+                                        'name' => $name,
+                                        'mobile' => $mobile,
+                                        'place' => $place,
+                                        'role' => $role,
+                                        'profile_image' => $newFileName,
+                                        'utr' => $utr
+                                    ];
+                                    $name = $mobile = $place = $role = '';
+                                } else {
+                                    $errorMsg = '❌ Image upload failed. Please try again.';
+                                }
                             }
                         }
                     }
