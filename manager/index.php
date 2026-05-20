@@ -219,11 +219,12 @@ try {
                         </div>
                     </div>
                 </div>
-            </div> <!-- Close Active Auction Dashboard (8 Cols) -->
-        </div> <!-- Close Top Section (12 Cols Grid) -->
+            </div> <!-- Close Bidding Action Controls (#bid-action-card) -->
+        </div> <!-- Close Active Auction Dashboard (#auction-console) -->
+    </div> <!-- Close Top Section (12 Cols Grid) -->
 
-        <!-- Bottom Section: Pools (Side-by-side, 6 Cols each) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Bottom Section: Pools (Side-by-side, 6 Cols each) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             <!-- Block 1: Available Pool -->
             <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
