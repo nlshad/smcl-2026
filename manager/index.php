@@ -28,12 +28,12 @@ try {
     }
 
     // Fetch verified available players
-    $stmt = $pdo->prepare("SELECT id, name, place, role, base_price, auction_status FROM players WHERE payment_status = 'Verified' AND auction_status = 'Available' ORDER BY id ASC");
+    $stmt = $pdo->prepare("SELECT id, name, place, role, profile_image, base_price, auction_status FROM players WHERE payment_status = 'Verified' AND auction_status = 'Available' ORDER BY id ASC");
     $stmt->execute();
     $availablePool = $stmt->fetchAll();
 
     // Fetch verified sold or unsold players
-    $stmt = $pdo->prepare("SELECT p.id, p.name, p.place, p.role, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
+    $stmt = $pdo->prepare("SELECT p.id, p.name, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
                            FROM players p 
                            LEFT JOIN teams t ON p.team_id = t.id 
                            WHERE p.payment_status = 'Verified' AND p.auction_status IN ('Sold', 'Unsold') 
@@ -248,13 +248,18 @@ try {
                         </div>
                     <?php else: ?>
                         <?php foreach ($availablePool as $p): ?>
-                            <div class="available-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
+                            <div class="available-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative" 
                                  data-id="<?php echo $p['id']; ?>"
                                  data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
                                  data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
                                  data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
                                  onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                <div class="min-w-0">
+                                <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
+                                    <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" 
+                                         alt="Player" class="w-full h-full object-cover" 
+                                         onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
+                                </div>
+                                <div class="flex-grow min-w-0">
                                     <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
                                         <span><?php echo htmlspecialchars($p['name']); ?></span>
                                     </div>
@@ -294,13 +299,18 @@ try {
                         </div>
                     <?php else: ?>
                         <?php foreach ($completedPool as $p): ?>
-                            <div class="completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
+                            <div class="completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative" 
                                  data-id="<?php echo $p['id']; ?>"
                                  data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
                                  data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
                                  data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
                                  onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                <div class="min-w-0">
+                                <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
+                                    <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" 
+                                         alt="Player" class="w-full h-full object-cover" 
+                                         onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
+                                </div>
+                                <div class="flex-grow min-w-0">
                                     <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
                                         <span><?php echo htmlspecialchars($p['name']); ?></span>
                                         <?php if ($p['auction_status'] === 'Unsold'): ?>
@@ -543,7 +553,7 @@ try {
                 const pid = parseInt(p.id);
                 if (!existingCompletedIds.has(pid)) {
                     const card = document.createElement('div');
-                    card.className = "completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative";
+                    card.className = "completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative";
                     card.setAttribute('data-id', pid);
                     card.setAttribute('data-name', p.name.toLowerCase());
                     card.setAttribute('data-role', p.role.toLowerCase());
@@ -562,7 +572,12 @@ try {
                            <span class="text-gold-400 font-mono font-bold text-xs">₹${Number(p.sold_price).toLocaleString()}</span>`;
                     
                     card.innerHTML = `
-                        <div class="min-w-0">
+                        <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
+                            <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" 
+                                 alt="Player" class="w-full h-full object-cover" 
+                                 onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
+                        </div>
+                        <div class="flex-grow min-w-0">
                             <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
                                 <span>${p.name}</span>
                                 ${statusBadge}
@@ -704,7 +719,7 @@ try {
                     document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
                     document.getElementById('player-place').innerText = data.current_player.place;
                     document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
-                    document.getElementById('player-image').src = uploadPath + data.current_player.profile_image;
+                    document.getElementById('player-image').src = data.current_player.profile_image ? (uploadPath + data.current_player.profile_image) : (uploadPath + 'player_placeholder.jpg');
 
                     // Update Bid details
                     document.getElementById('active-bid').innerText = "₹" + data.highest_bid;
