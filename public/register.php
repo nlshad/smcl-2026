@@ -318,16 +318,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
 
                 <!-- Important Notice -->
-                <div class="max-w-sm mx-auto bg-gold-950/10 border border-gold-500/25 text-left p-4 rounded-xl text-xs space-y-2.5 mt-4">
-                    <div class="font-extrabold flex items-center gap-1.5 text-gold-400 uppercase tracking-wider text-[10px]">
+                <div class="max-w-sm mx-auto bg-gold-950/10 border border-gold-500/25 text-left p-5 rounded-xl text-xs space-y-3 mt-4">
+                    <div class="font-extrabold flex items-center gap-1.5 text-gold-400 uppercase tracking-wider text-[10px] border-b border-gold-500/10 pb-2">
                         <i class="fa-solid fa-circle-info"></i> Important Instructions
                     </div>
-                    <ul class="list-disc pl-4 space-y-1.5 text-gray-400 text-[11px] leading-relaxed">
-                        <li>Please <strong class="text-gray-300">download & save</strong> this card to your phone or computer.</li>
-                        <li>This card contains your official <strong class="text-gray-300">Registration ID</strong> which is required for verification.</li>
-                        <li>Admin review will take up to 24 hours. Your details will appear in the Live Auction Pool once approved.</li>
-                        <li>Make sure the details printed on this card match your credentials.</li>
-                    </ul>
+                    <div class="space-y-3.5 text-gray-400 text-[11px] leading-relaxed">
+                        <div>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 1: Save your card</span>
+                            Please download and save this card to your device.
+                        </div>
+                        <div>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 2: Make your payment</span>
+                            Payment is collected manually. Your account will be verified once we receive and confirm your payment.
+                        </div>
+                        <div>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 3: Join the auction</span>
+                            Only verified candidates will be listed on the auction dashboard.
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php else: ?>
