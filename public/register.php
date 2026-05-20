@@ -11,6 +11,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 
 $successMsg = '';
 $errorMsg = '';
+$registeredPlayer = null;
 
 // Handle Registration Form Post
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -64,6 +65,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
                             
                             $successMsg = "🎉 Registration submitted successfully! Your cropped profile photo is queued for Admin approval.";
+                            $registeredPlayer = [
+                                'name' => $name,
+                                'mobile' => $mobile,
+                                'place' => $place,
+                                'role' => $role,
+                                'profile_image' => $newFileName,
+                                'utr' => $utr
+                            ];
                             // Reset form values
                             $name = $mobile = $place = $role = '';
                         } else {
@@ -114,6 +123,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $stmt->execute([$name, $mobile, $place, $role, $newFileName, $utr]);
                                 
                                 $successMsg = "🎉 Registration submitted successfully! Your profile is queued for Admin approval.";
+                                $registeredPlayer = [
+                                    'name' => $name,
+                                    'mobile' => $mobile,
+                                    'place' => $place,
+                                    'role' => $role,
+                                    'profile_image' => $newFileName,
+                                    'utr' => $utr
+                                ];
                                 $name = $mobile = $place = $role = '';
                             } else {
                                 $errorMsg = '❌ Image upload failed. Please try again.';
@@ -165,6 +182,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- Cropper.js CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <!-- html2canvas CDN for image download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -227,6 +246,88 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <a href="index.php" class="bg-white/5 border border-white/10 hover:border-white/20 text-[10px] font-bold uppercase tracking-wider px-6 py-3 rounded-xl text-gray-300 hover:text-white transition inline-block">
                         <i class="fa-solid fa-arrow-left mr-1.5 text-[10px]"></i> Back to Live Auction
                     </a>
+                </div>
+            </div>
+        <?php elseif (!empty($registeredPlayer)): ?>
+            <!-- REGISTRATION SUCCESS CARD -->
+            <div class="p-6 md:p-8 max-w-xl mx-auto space-y-6 text-center">
+                <!-- Gorgeous Sports Card -->
+                <div class="relative max-w-[340px] mx-auto overflow-hidden rounded-2xl border-2 border-gold-500/30 bg-gradient-to-b from-[#1c1c1c] via-[#101010] to-[#050505] shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 mb-6" id="registration-card" data-utr="<?php echo htmlspecialchars($registeredPlayer['utr']); ?>">
+                    <!-- Card Background Glow Effect -->
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,163,12,0.18)_0%,transparent_70%)] pointer-events-none"></div>
+                    
+                    <!-- Card Header -->
+                    <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                        <div class="flex items-center gap-2">
+                            <img src="uploads/league_logo.png" alt="SMCL Logo" class="w-9 h-9 object-contain">
+                            <div class="text-left">
+                                <div class="text-xs font-black text-gold-400 tracking-wider uppercase leading-none">SMCL 2026</div>
+                                <div class="text-[7.5px] font-bold text-gray-400 tracking-widest uppercase leading-none mt-1">OFFICIAL PLAYER CARD</div>
+                            </div>
+                        </div>
+                        <span class="bg-yellow-950/70 border border-yellow-500/30 text-yellow-400 font-black px-2 py-0.5 rounded text-[7.5px] uppercase tracking-wider">
+                            Pending Verification
+                        </span>
+                    </div>
+
+                    <!-- Player Picture Frame -->
+                    <div class="relative w-44 h-48 mx-auto rounded-xl overflow-hidden border-2 border-gold-500/40 bg-black/40 shadow-[inset_0_4px_12px_rgba(0,0,0,0.8)] mb-4">
+                        <img src="uploads/<?php echo htmlspecialchars($registeredPlayer['profile_image']); ?>" alt="Candidate" class="w-full h-full object-cover">
+                        <!-- Corner Accent Borders -->
+                        <div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-gold-400/80"></div>
+                        <div class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-gold-400/80"></div>
+                        <div class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-gold-400/80"></div>
+                        <div class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-gold-400/80"></div>
+                    </div>
+
+                    <!-- Player Name -->
+                    <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-600 tracking-tight uppercase mb-0.5 leading-none">
+                        <?php echo htmlspecialchars($registeredPlayer['name']); ?>
+                    </h3>
+                    <p class="text-[8.5px] font-extrabold text-gray-500 tracking-widest uppercase mb-4 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-location-dot text-gray-600"></i> <?php echo htmlspecialchars($registeredPlayer['place']); ?>
+                    </p>
+
+                    <!-- Details Table -->
+                    <div class="grid grid-cols-2 gap-3 text-left bg-black/60 border border-white/5 rounded-xl p-3.5 mb-2">
+                        <div>
+                            <div class="text-[7.5px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Player Role</div>
+                            <div class="text-xs font-extrabold text-white"><?php echo htmlspecialchars($registeredPlayer['role']); ?></div>
+                        </div>
+                        <div>
+                            <div class="text-[7.5px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Mobile Number</div>
+                            <div class="text-xs font-extrabold text-white font-mono"><?php echo htmlspecialchars($registeredPlayer['mobile']); ?></div>
+                        </div>
+                        <div class="col-span-2 border-t border-white/10 pt-2.5 mt-1.5">
+                            <div class="text-[7.5px] text-gray-500 font-bold uppercase tracking-wider mb-1">Registration ID (UTR Reference)</div>
+                            <div class="text-xs font-black text-gold-400 font-mono tracking-wider bg-gold-950/20 border border-gold-500/10 px-2 py-1 rounded text-center uppercase"><?php echo htmlspecialchars($registeredPlayer['utr']); ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Card Buttons -->
+                <div class="pt-2 flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
+                    <button id="download-card-btn" onclick="downloadRegistrationCard()"
+                            class="flex-1 bg-gradient-to-r from-gold-500 to-amber-600 text-black font-extrabold uppercase text-xs tracking-wider py-3.5 px-6 rounded-xl hover:from-gold-400 hover:to-gold-500 transition duration-300 shadow-lg shadow-gold-500/20 active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Download Card Image
+                    </button>
+                    <a href="register.php"
+                       class="flex-1 bg-white/5 border border-white/10 hover:border-white/20 text-xs font-bold uppercase tracking-wider py-3.5 px-6 rounded-xl text-gray-300 hover:text-white transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Register Another
+                    </a>
+                </div>
+
+                <!-- Important Notice -->
+                <div class="max-w-sm mx-auto bg-gold-950/10 border border-gold-500/25 text-left p-4 rounded-xl text-xs space-y-2.5 mt-4">
+                    <div class="font-extrabold flex items-center gap-1.5 text-gold-400 uppercase tracking-wider text-[10px]">
+                        <i class="fa-solid fa-circle-info"></i> Important Instructions
+                    </div>
+                    <ul class="list-disc pl-4 space-y-1.5 text-gray-400 text-[11px] leading-relaxed">
+                        <li>Please <strong class="text-gray-300">download & save</strong> this card to your phone or computer.</li>
+                        <li>This card contains your official <strong class="text-gray-300">Registration ID</strong> which is required for verification.</li>
+                        <li>Admin review will take up to 24 hours. Your details will appear in the Live Auction Pool once approved.</li>
+                        <li>Make sure the details printed on this card match your credentials.</li>
+                    </ul>
                 </div>
             </div>
         <?php else: ?>
@@ -409,6 +510,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             promptDiv.classList.add('hidden');
             feedbackDiv.classList.remove('hidden');
             cropModal.classList.add('hidden');
+        }
+
+        // Generate and Download Registration Card as High-Res PNG Image
+        function downloadRegistrationCard() {
+            const card = document.getElementById('registration-card');
+            const downloadBtn = document.getElementById('download-card-btn');
+            
+            // Temporary loading state
+            const originalBtnText = downloadBtn.innerHTML;
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Generating Image...';
+            
+            html2canvas(card, {
+                useCORS: true,
+                scale: 3, // Premium quality high-DPI scaling
+                backgroundColor: '#0a0a0a',
+                logging: false
+            }).then(canvas => {
+                // Restore button
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = originalBtnText;
+                
+                const link = document.createElement('a');
+                link.download = 'SMCL_Registration_' + card.getAttribute('data-utr') + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                console.error('Failed to generate image:', err);
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = originalBtnText;
+                alert('Could not download image. Please screenshot the card instead.');
+            });
         }
     </script>
 </body>
