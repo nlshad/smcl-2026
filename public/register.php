@@ -324,15 +324,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="space-y-3.5 text-gray-400 text-[11px] leading-relaxed">
                         <div>
-                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 1: Save your card</span>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Save your card</span>
                             Please download and save this card to your device.
                         </div>
                         <div>
-                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 2: Make your payment</span>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Make your payment</span>
                             Payment is collected manually. Your account will be verified once we receive and confirm your payment.
                         </div>
                         <div>
-                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Step 3: Join the auction</span>
+                            <span class="font-bold text-gold-400 uppercase tracking-wide block text-[9.5px]">Join the auction</span>
                             Only verified candidates will be listed on the auction dashboard.
                         </div>
                     </div>
