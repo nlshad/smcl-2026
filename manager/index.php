@@ -26,6 +26,11 @@ try {
         header("Location: ../public/login.php");
         exit;
     }
+
+    // Fetch all available or unsold players
+    $stmt = $pdo->prepare("SELECT id, name, place, role, profile_image, base_price, auction_status FROM players WHERE auction_status IN ('Available', 'Unsold') ORDER BY id ASC");
+    $stmt->execute();
+    $poolPlayers = $stmt->fetchAll();
 } catch (Exception $e) {
     die("Database Connection Error: " . $e->getMessage());
 }
@@ -204,6 +209,60 @@ try {
                 </div>
             </div>
 
+            <!-- Available Pool Section -->
+            <div class="col-span-12 glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[300px]">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
+                    <div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Pool</span>
+                        <h3 class="text-base font-extrabold text-gold-400 mt-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available Pool
+                        </h3>
+                    </div>
+                    <!-- Search input -->
+                    <div class="relative w-full sm:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                        <input type="text" id="pool-search-input" onkeyup="filterPoolPlayers()" placeholder="Search by name, role or place..." 
+                               class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+                    </div>
+                </div>
+
+                <!-- Available Pool Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[320px] pr-1" id="available-players-pool">
+                    <?php if (empty($poolPlayers)): ?>
+                        <div class="col-span-12 text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold">
+                            No available players.
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($poolPlayers as $p): ?>
+                            <div class="pool-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative" 
+                                 data-id="<?php echo $p['id']; ?>"
+                                 data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+                                 data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
+                                 data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
+                                 onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
+                                <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
+                                    <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" 
+                                         alt="Player" class="w-full h-full object-cover" 
+                                         onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                                        <span><?php echo htmlspecialchars($p['name']); ?></span>
+                                    </div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
+                                        <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
+                                    </div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
+                                    <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -322,6 +381,29 @@ try {
             }
         }
 
+        // Search Filter for Available Pool in Manager Room
+        function filterPoolPlayers() {
+            const query = document.getElementById('pool-search-input').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.pool-player-card');
+            
+            cards.forEach(card => {
+                if (card.classList.contains('hidden-sold')) {
+                    card.style.display = 'none';
+                    return;
+                }
+                
+                const name = card.getAttribute('data-name') || '';
+                const role = card.getAttribute('data-role') || '';
+                const place = card.getAttribute('data-place') || '';
+                
+                if (name.includes(query) || role.includes(query) || place.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
         document.addEventListener('click', () => {
             SMCLSoundEngine.init();
         }, { once: true });
@@ -400,6 +482,67 @@ try {
                         squadListEl.innerHTML = `<div class="text-center text-[10px] text-gray-500 py-6 uppercase font-semibold">No players purchased yet.</div>`;
                     }
                 }
+
+                // 2.7 Update Available Pool dynamically
+                const activePlayerIdOnBlock = data.current_player_id;
+                const completedPlayerIds = new Set(
+                    (data.completed_players || [])
+                        .filter(p => p.auction_status === 'Sold')
+                        .map(p => parseInt(p.id))
+                );
+                const unsoldPlayerIds = new Set(
+                    (data.completed_players || [])
+                        .filter(p => p.auction_status === 'Unsold')
+                        .map(p => parseInt(p.id))
+                );
+
+                const poolCards = document.querySelectorAll('.pool-player-card');
+                poolCards.forEach(card => {
+                    const cardId = parseInt(card.getAttribute('data-id'));
+                    
+                    if (completedPlayerIds.has(cardId)) {
+                        card.style.display = 'none';
+                        card.classList.add('hidden-sold');
+                    } else {
+                        // Check and display Unsold status badge
+                        let statusBadge = card.querySelector('.status-badge');
+                        if (unsoldPlayerIds.has(cardId)) {
+                            if (!statusBadge) {
+                                statusBadge = document.createElement('span');
+                                statusBadge.className = 'status-badge text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 inline-block';
+                                statusBadge.innerText = 'Unsold';
+                                card.querySelector('.flex-grow > div').appendChild(statusBadge);
+                            }
+                        } else {
+                            if (statusBadge) {
+                                statusBadge.remove();
+                            }
+                        }
+
+                        // Check and highlight if active player on block
+                        if (cardId === activePlayerIdOnBlock) {
+                            card.classList.add('border-gold-500/50', 'bg-gold-500/10', 'ring-1', 'ring-gold-500/30');
+                            card.classList.remove('border-white/5', 'bg-white/5');
+                            
+                            let liveBadge = card.querySelector('.live-badge');
+                            if (!liveBadge) {
+                                liveBadge = document.createElement('span');
+                                liveBadge.className = 'live-badge absolute top-1 right-1 bg-red-600 text-white text-[6px] font-extrabold px-1 rounded uppercase tracking-wider animate-pulse';
+                                liveBadge.innerText = 'Live';
+                                card.style.position = 'relative';
+                                card.appendChild(liveBadge);
+                            }
+                        } else {
+                            card.classList.remove('border-gold-500/50', 'bg-gold-500/10', 'ring-1', 'ring-gold-500/30');
+                            card.classList.add('border-white/5', 'bg-white/5');
+                            
+                            const liveBadge = card.querySelector('.live-badge');
+                            if (liveBadge) {
+                                liveBadge.remove();
+                            }
+                        }
+                    }
+                });
 
                 // 3. Layout Switches based on Bidding Player
                 const standbyBox = document.getElementById('standby-box');
