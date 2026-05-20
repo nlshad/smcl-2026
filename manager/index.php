@@ -108,8 +108,11 @@ try {
     </header>
 
     <!-- Main Content Arena -->
-    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto space-y-6 relative">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,163,12,0.02)_0%,transparent_75%)] pointer-events-none"></div>
+
+        <!-- Top Section: Stats & Active Bidding Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- LEFT SIDE: Franchise Dashboard Stats (4 Cols) -->
         <div class="lg:col-span-4 space-y-6">
@@ -216,113 +219,112 @@ try {
                         </div>
                     </div>
                 </div>
+            </div> <!-- Close Active Auction Dashboard (8 Cols) -->
+        </div> <!-- Close Top Section (12 Cols Grid) -->
+
+        <!-- Bottom Section: Pools (Side-by-side, 6 Cols each) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Block 1: Available Pool -->
+            <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
+                    <div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Pool</span>
+                        <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available
+                        </h3>
+                    </div>
+                    <div class="relative w-48 sm:w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                        <input type="text" id="available-search-input" onkeyup="filterAvailablePlayers()" placeholder="Search available..." 
+                               class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+                    </div>
+                </div>
+                <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="available-pool-container">
+                    <?php if (empty($availablePool)): ?>
+                        <div class="text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg">
+                            No available players.
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($availablePool as $p): ?>
+                            <div class="available-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
+                                 data-id="<?php echo $p['id']; ?>"
+                                 data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+                                 data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
+                                 data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
+                                 onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                                        <span><?php echo htmlspecialchars($p['name']); ?></span>
+                                    </div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
+                                        <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
+                                    </div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
+                                    <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
 
-            <!-- Two Bottom Blocks: Available vs Sold & Unsold -->
-            <div class="col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
-                
-                <!-- Block 1: Available Pool -->
-                <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
-                    <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
-                        <div>
-                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Pool</span>
-                            <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available
-                            </h3>
-                        </div>
-                        <div class="relative w-48 sm:w-56">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                            <input type="text" id="available-search-input" onkeyup="filterAvailablePlayers()" placeholder="Search available..." 
-                                   class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
-                        </div>
+            <!-- Block 2: Sold & Unsold Pool -->
+            <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
+                    <div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Completed</span>
+                        <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-gray-400"></i> Sold & Unsold
+                        </h3>
                     </div>
-                    <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="available-pool-container">
-                        <?php if (empty($availablePool)): ?>
-                            <div class="text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg">
-                                No available players.
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($availablePool as $p): ?>
-                                <div class="available-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
-                                     data-id="<?php echo $p['id']; ?>"
-                                     data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
-                                     data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
-                                     data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
-                                     onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                    <div class="min-w-0">
-                                        <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
-                                            <span><?php echo htmlspecialchars($p['name']); ?></span>
-                                        </div>
-                                        <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
-                                            <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex-shrink-0">
-                                        <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
-                                        <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                    <div class="relative w-48 sm:w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                        <input type="text" id="completed-search-input" onkeyup="filterCompletedPlayers()" placeholder="Search sold/unsold..." 
+                               class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
                     </div>
                 </div>
-
-                <!-- Block 2: Sold & Unsold Pool -->
-                <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
-                    <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
-                        <div>
-                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Completed</span>
-                            <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-check text-gray-400"></i> Sold & Unsold
-                            </h3>
+                <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="completed-pool-container">
+                    <?php if (empty($completedPool)): ?>
+                        <div class="text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg">
+                            No completed players yet.
                         </div>
-                        <div class="relative w-48 sm:w-56">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                            <input type="text" id="completed-search-input" onkeyup="filterCompletedPlayers()" placeholder="Search sold/unsold..." 
-                                   class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
-                        </div>
-                    </div>
-                    <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="completed-pool-container">
-                        <?php if (empty($completedPool)): ?>
-                            <div class="text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg">
-                                No completed players yet.
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($completedPool as $p): ?>
-                                <div class="completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
-                                     data-id="<?php echo $p['id']; ?>"
-                                     data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
-                                     data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
-                                     data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
-                                     onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                    <div class="min-w-0">
-                                        <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
-                                            <span><?php echo htmlspecialchars($p['name']); ?></span>
-                                            <?php if ($p['auction_status'] === 'Unsold'): ?>
-                                                <span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>
-                                            <?php else: ?>
-                                                <span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to <?php echo htmlspecialchars($p['team_name']); ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
-                                            <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex-shrink-0">
+                    <?php else: ?>
+                        <?php foreach ($completedPool as $p): ?>
+                            <div class="completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition cursor-pointer relative" 
+                                 data-id="<?php echo $p['id']; ?>"
+                                 data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+                                 data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
+                                 data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
+                                 onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                                        <span><?php echo htmlspecialchars($p['name']); ?></span>
                                         <?php if ($p['auction_status'] === 'Unsold'): ?>
-                                            <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
-                                            <span class="text-gray-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
+                                            <span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>
                                         <?php else: ?>
-                                            <span class="text-[8px] text-gray-500 uppercase block font-bold">Sold Price</span>
-                                            <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['sold_price']); ?></span>
+                                            <span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to <?php echo htmlspecialchars($p['team_name']); ?></span>
                                         <?php endif; ?>
                                     </div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
+                                        <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
+                                <div class="text-right flex-shrink-0">
+                                    <?php if ($p['auction_status'] === 'Unsold'): ?>
+                                        <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
+                                        <span class="text-gray-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
+                                    <?php else: ?>
+                                        <span class="text-[8px] text-gray-500 uppercase block font-bold">Sold Price</span>
+                                        <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['sold_price']); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-
             </div>
 
         </div>
