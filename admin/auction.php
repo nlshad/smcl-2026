@@ -9,6 +9,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+// Self-healing uploads path checker
+$uploadPath = is_dir('../public/uploads') ? '../public/uploads/' : '../uploads/';
+
 // Fetch verified and available players for the side menu list
 try {
     $stmt = $pdo->prepare("SELECT * FROM players WHERE payment_status = 'Verified' AND auction_status IN ('Available', 'Unsold') ORDER BY id ASC");
@@ -34,7 +37,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-2 sm:gap-3">
-            <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
+            <img src="<?php echo $uploadPath; ?>league_logo.png" alt="SMCL Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
             <div>
                 <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white flex items-center gap-1.5 leading-none">
                     SMCL Auctioneer Desk <span class="bg-red-600 text-white text-[7px] sm:text-[8px] font-extrabold px-1 sm:px-1.5 py-0.5 rounded tracking-widest uppercase animate-pulse">Live</span>
@@ -103,7 +106,7 @@ try {
                              data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>">
                             <div class="flex items-center gap-3 cursor-pointer" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                 <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
-                                    <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Player" class="w-full h-full object-cover">
+                                    <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image']); ?>" alt="Player" class="w-full h-full object-cover">
                                 </div>
                                 <div>
                                     <div class="font-bold text-white text-xs group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
@@ -145,7 +148,7 @@ try {
             <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
                     <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
-                        <img src="" id="player-image" alt="Player Image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../public/uploads/player_placeholder.jpg';">
+                        <img src="" id="player-image" alt="Player Image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                     </div>
                     <div class="text-center mt-4">
                         <span class="text-[8px] uppercase tracking-widest text-gold-400 font-bold bg-gold-950/60 border border-gold-500/20 px-2 py-0.5 rounded" id="player-role">
@@ -231,6 +234,7 @@ try {
 
     <!-- JavaScript Controller -->
     <script>
+        const uploadPath = "<?php echo $uploadPath; ?>";
         let activePlayerId = null;
         let lastBiddingStatus = 'Idle';
         let lastBidAmount = 0;
@@ -377,7 +381,7 @@ try {
                     document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
                     document.getElementById('player-place').innerText = data.current_player.place;
                     document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
-                    document.getElementById('player-image').src = "../public/uploads/" + data.current_player.profile_image;
+                    document.getElementById('player-image').src = uploadPath + data.current_player.profile_image;
 
                     // Update Active Bid details
                     document.getElementById('active-bid').innerText = "₹" + data.highest_bid;

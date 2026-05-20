@@ -9,6 +9,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+// Self-healing uploads path checker
+$uploadPath = is_dir('../public/uploads') ? '../public/uploads/' : '../uploads/';
+
 $successMsg = '';
 $errorMsg = '';
 
@@ -59,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                         
                         $newFileName = 'team_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                        $uploadFileDir = '../public/uploads/';
+                        $uploadFileDir = $uploadPath;
                         $dest_path = $uploadFileDir . $newFileName;
                         
                         if (move_uploaded_file($fileTmpPath, $dest_path)) {
@@ -117,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     
                     if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
                         $newFileName = uniqid('player_', true) . '.' . $fileExtension;
-                        $uploadFileDir = '../public/uploads/';
+                        $uploadFileDir = $uploadPath;
                         $dest_path = $uploadFileDir . $newFileName;
                         
                         if (move_uploaded_file($fileTmpPath, $dest_path)) {
@@ -198,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                     
                     $newFileName = 'team_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                    $uploadFileDir = '../public/uploads/';
+                    $uploadFileDir = $uploadPath;
                     $dest_path = $uploadFileDir . $newFileName;
                     
                     if (move_uploaded_file($fileTmpPath, $dest_path)) {
@@ -256,7 +259,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-2 sm:gap-3">
-            <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
+            <img src="<?php echo $uploadPath; ?>league_logo.png" alt="SMCL Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
             <div>
                 <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white leading-none">
                     Super Admin Console
@@ -355,7 +358,7 @@ try {
                                         <!-- Player photo + name -->
                                         <td class="py-3.5 pr-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition rounded-lg p-2" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                             <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
-                                                <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" alt="Profile" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../public/uploads/player_placeholder.jpg';">
+                                                <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" alt="Profile" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                                             </div>
                                             <div>
                                                 <div class="font-bold text-white group-hover:text-gold-400 transition"><?php echo htmlspecialchars($p['name']); ?></div>
@@ -505,7 +508,7 @@ try {
                             <?php foreach ($teams as $t): ?>
                                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-gold-500/20 transition">
                                     <div class="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition duration-200" onclick="openFranchiseDetailsModal(<?php echo $t['id']; ?>)">
-                                        <img src="../public/uploads/<?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm" onerror="this.onerror=null; this.src='../public/uploads/team_placeholder.jpg';">
+                                        <img src="<?php echo $uploadPath; ?><?php echo $t['logo'] ? htmlspecialchars($t['logo']) : 'team_placeholder.jpg'; ?>" class="w-7 h-7 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-sm" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>team_placeholder.jpg';">
                                         <div>
                                             <div class="font-bold text-white hover:text-gold-400 transition flex items-center gap-1">
                                                 <?php echo htmlspecialchars($t['team_name']); ?>
@@ -787,7 +790,7 @@ try {
             <!-- Modal Header -->
             <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
                 <div class="flex items-center gap-3">
-                    <img id="view_team_logo" src="../public/uploads/team_placeholder.jpg" class="w-10 h-10 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-md">
+                    <img id="view_team_logo" src="<?php echo $uploadPath; ?>team_placeholder.jpg" class="w-10 h-10 rounded object-contain bg-black/40 p-0.5 border border-white/10 shadow-md">
                     <div>
                         <h3 id="view_team_name" class="text-base font-black uppercase text-gold-400 tracking-tight">Franchise Details</h3>
                         <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Roster & Financial Summary</p>
@@ -852,6 +855,7 @@ try {
 
     <!-- Modals Script Control -->
     <script>
+    const uploadPath = "<?php echo $uploadPath; ?>";
     async function openFranchiseDetailsModal(teamId) {
         try {
             const response = await fetch(`../api/get_team_details.php?team_id=${teamId}`);
@@ -866,7 +870,7 @@ try {
             const players = data.players;
 
             // Populate statistics
-            document.getElementById('view_team_logo').src = team.logo ? `../public/uploads/${team.logo}` : '../public/uploads/team_placeholder.jpg';
+            document.getElementById('view_team_logo').src = team.logo ? `${uploadPath}${team.logo}` : `${uploadPath}team_placeholder.jpg`;
             document.getElementById('view_team_name').innerText = team.team_name;
             document.getElementById('view_team_total_purse').innerText = '₹' + Number(team.total_purse).toLocaleString('en-IN');
             document.getElementById('view_team_remaining_purse').innerText = '₹' + Number(team.remaining_purse).toLocaleString('en-IN');
@@ -890,7 +894,7 @@ try {
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-white/5 text-xs hover:bg-white/5 transition duration-150";
                     
-                    const imgUrl = p.profile_image ? `../public/uploads/${p.profile_image}` : '../public/uploads/player_placeholder.jpg';
+                    const imgUrl = p.profile_image ? `${uploadPath}${p.profile_image}` : `${uploadPath}player_placeholder.jpg`;
                     
                     tr.innerHTML = `
                         <td class="py-3 flex items-center gap-2.5">
@@ -1013,7 +1017,6 @@ try {
     }
     </script>
     <?php 
-        $uploadPath = "../public/uploads/";
         require_once '../public/components/modals.php'; 
     ?>
 </body>

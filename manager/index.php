@@ -9,6 +9,9 @@ if (!isset($_SESSION['manager_logged_in']) || $_SESSION['manager_logged_in'] !==
     exit;
 }
 
+// Self-healing uploads path checker
+$uploadPath = is_dir('../public/uploads') ? '../public/uploads/' : '../uploads/';
+
 $teamId = $_SESSION['team_id'];
 $managerUser = $_SESSION['manager_username'];
 
@@ -56,7 +59,7 @@ try {
     <!-- Header Navigation -->
     <header class="w-full glass-panel border-b border-gold-500/10 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center gap-2 sm:gap-3">
-            <img src="../public/uploads/<?php echo htmlspecialchars($team['logo'] ? $team['logo'] : 'team_placeholder.jpg'); ?>" alt="Team Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain bg-black/40 p-0.5 rounded border border-white/10">
+            <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($team['logo'] ? $team['logo'] : 'team_placeholder.jpg'); ?>" alt="Team Logo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain bg-black/40 p-0.5 rounded border border-white/10">
             <div>
                 <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white leading-none">
                     <?php echo htmlspecialchars($team['team_name']); ?>
@@ -68,7 +71,7 @@ try {
         <div class="flex items-center gap-2 sm:gap-4">
             <!-- League Logo Badge -->
             <div class="hidden sm:flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
-                <img src="../public/uploads/league_logo.png" alt="SMCL Logo" class="w-7 h-7 object-contain">
+                <img src="<?php echo $uploadPath; ?>league_logo.png" alt="SMCL Logo" class="w-7 h-7 object-contain">
                 <span class="text-gold-400 text-[10px] font-black uppercase tracking-wider">SMCL 2026</span>
             </div>
 
@@ -145,7 +148,7 @@ try {
             <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
                     <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
-                        <img src="" id="player-image" alt="Player" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='../public/uploads/player_placeholder.jpg';">
+                        <img src="" id="player-image" alt="Player" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                     </div>
                     <div class="text-center mt-4">
                         <span class="text-[8px] uppercase tracking-widest text-gold-400 font-bold bg-gold-950/60 border border-gold-500/20 px-2 py-0.5 rounded" id="player-role">
@@ -211,6 +214,7 @@ try {
 
     <!-- JavaScript Handling Live Polling & Action Requests -->
     <script>
+        const uploadPath = "<?php echo $uploadPath; ?>";
         const myTeamId = <?php echo $teamId; ?>;
         
         let activePlayerId = null;
@@ -382,7 +386,7 @@ try {
                             row.onclick = () => openPlayerDetailsModal(p.id);
                             row.innerHTML = `
                                 <div class="flex items-center gap-3">
-                                    <img src="../public/uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md" onerror="this.onerror=null; this.src='../public/uploads/player_placeholder.jpg';">
+                                    <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md" onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
                                     <div>
                                         <span class="text-white font-extrabold block">${p.name}</span>
                                         <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
@@ -414,7 +418,7 @@ try {
                     document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
                     document.getElementById('player-place').innerText = data.current_player.place;
                     document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
-                    document.getElementById('player-image').src = "../public/uploads/" + data.current_player.profile_image;
+                    document.getElementById('player-image').src = uploadPath + data.current_player.profile_image;
 
                     // Update Bid details
                     document.getElementById('active-bid').innerText = "₹" + data.highest_bid;
@@ -611,7 +615,6 @@ try {
         }
     </script>
     <?php 
-        $uploadPath = "../public/uploads/";
         require_once '../public/components/modals.php'; 
     ?>
 </body>

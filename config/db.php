@@ -9,9 +9,10 @@ date_default_timezone_set('Asia/Kolkata');
 
 $charset = 'utf8mb4';
 
-// Robust Auto-detect environment (Looks strictly at what is in your browser's address bar)
+// Robust Auto-detect environment (Looks strictly at what is in your browser's address bar or if running via CLI)
 $hostHeader = $_SERVER['HTTP_HOST'] ?? '';
-$isLocal = $hostHeader === 'localhost' 
+$isLocal = php_sapi_name() === 'cli'
+           || $hostHeader === 'localhost' 
            || $hostHeader === '127.0.0.1' 
            || str_starts_with($hostHeader, '127.0.0.1:') 
            || str_starts_with($hostHeader, '192.168.');
