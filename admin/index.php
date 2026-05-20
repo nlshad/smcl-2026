@@ -313,6 +313,13 @@ try {
                     </span>
                 </div>
 
+                <!-- Search bar -->
+                <div class="relative mb-4 flex-shrink-0">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                    <input type="text" id="players-search-input" onkeyup="filterRegistrations()" placeholder="Search by name, mobile, role, hometown or status..." 
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+                </div>
+
                 <!-- Players Table Container -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
@@ -325,7 +332,7 @@ try {
                                 <th class="pb-3 pl-2 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/5">
+                        <tbody class="divide-y divide-white/5" id="players-table-tbody">
                             <?php if (empty($players)): ?>
                                 <tr>
                                     <td colspan="5" class="py-8 text-center text-gray-500 uppercase tracking-widest font-semibold">
@@ -333,8 +340,18 @@ try {
                                     </td>
                                 </tr>
                             <?php else: ?>
+                                <tr id="no-players-results-row" class="hidden">
+                                    <td colspan="5" class="py-8 text-center text-gray-500 uppercase tracking-widest font-semibold">
+                                        No matching players found.
+                                    </td>
+                                </tr>
                                 <?php foreach ($players as $p): ?>
-                                    <tr class="hover:bg-white/[0.02] transition">
+                                    <tr class="player-reg-row hover:bg-white/[0.02] transition"
+                                        data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+                                        data-mobile="<?php echo htmlspecialchars(strtolower($p['mobile'])); ?>"
+                                        data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
+                                        data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
+                                        data-status="<?php echo htmlspecialchars(strtolower($p['payment_status'])); ?>">
                                         <!-- Player photo + name -->
                                         <td class="py-3.5 pr-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition rounded-lg p-2" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                             <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
@@ -961,6 +978,37 @@ try {
         } else {
             panel.classList.add('hidden');
             btn.innerHTML = '<i class="fa-solid fa-plus-circle text-xs text-gold-400"></i> Add Franchise Team';
+        }
+    }
+
+    // Search Filter for Player Registrations Table
+    function filterRegistrations() {
+        const query = document.getElementById('players-search-input').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('.player-reg-row');
+        const noResults = document.getElementById('no-players-results-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || '';
+            const mobile = row.getAttribute('data-mobile') || '';
+            const role = row.getAttribute('data-role') || '';
+            const place = row.getAttribute('data-place') || '';
+            const status = row.getAttribute('data-status') || '';
+            
+            if (name.includes(query) || mobile.includes(query) || role.includes(query) || place.includes(query) || status.includes(query)) {
+                row.style.setProperty('display', '', 'important');
+                visibleCount++;
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+            }
+        });
+        
+        if (noResults) {
+            if (visibleCount === 0 && query !== '') {
+                noResults.style.setProperty('display', '', 'important');
+            } else {
+                noResults.style.setProperty('display', 'none', 'important');
+            }
         }
     }
     </script>

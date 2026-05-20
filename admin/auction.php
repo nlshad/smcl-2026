@@ -79,6 +79,13 @@ try {
                 <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Select and bring player to block</p>
             </div>
 
+            <!-- Search bar -->
+            <div class="relative mb-3 flex-shrink-0">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                <input type="text" id="pool-search-input" onkeyup="filterPoolPlayers()" placeholder="Search by name, role or hometown..." 
+                       class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+            </div>
+
             <!-- List container -->
             <div class="flex-grow overflow-y-auto pr-1 space-y-3" id="available-players-pool">
                 <?php if (empty($availablePlayers)): ?>
@@ -86,8 +93,14 @@ try {
                         Pool is currently empty.<br><span class="text-[10px] text-gray-600 mt-1 block">Verify payments first.</span>
                     </div>
                 <?php else: ?>
+                    <div id="no-results-msg" class="hidden text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold">
+                        No matching players found.
+                    </div>
                     <?php foreach ($availablePlayers as $p): ?>
-                        <div class="p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition group">
+                        <div class="pool-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center justify-between transition group"
+                             data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+                             data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
+                             data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>">
                             <div class="flex items-center gap-3 cursor-pointer" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
                                 <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
                                     <img src="../public/uploads/<?php echo htmlspecialchars($p['profile_image']); ?>" alt="Player" class="w-full h-full object-cover">
@@ -574,6 +587,35 @@ try {
                     toast.remove();
                 }, 300);
             }, 3500);
+        }
+
+        // Search Filter for Available Pool
+        function filterPoolPlayers() {
+            const query = document.getElementById('pool-search-input').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.pool-player-card');
+            const noResults = document.getElementById('no-results-msg');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const role = card.getAttribute('data-role') || '';
+                const place = card.getAttribute('data-place') || '';
+                
+                if (name.includes(query) || role.includes(query) || place.includes(query)) {
+                    card.style.setProperty('display', 'flex', 'important');
+                    visibleCount++;
+                } else {
+                    card.style.setProperty('display', 'none', 'important');
+                }
+            });
+            
+            if (noResults) {
+                if (visibleCount === 0 && query !== '') {
+                    noResults.classList.remove('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                }
+            }
         }
     </script>
     <?php 
