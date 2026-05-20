@@ -12,6 +12,8 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 $successMsg = '';
 $errorMsg = '';
 $registeredPlayer = null;
+$duplicateFound = false;
+$duplicatePlayerDetails = null;
 
 // Handle Registration Form Post
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -31,9 +33,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         try {
             // Check if player with same mobile number already exists
-            $checkStmt = $pdo->prepare("SELECT id FROM players WHERE mobile = ? LIMIT 1");
+            $checkStmt = $pdo->prepare("SELECT name, place, role, payment_status, payment_utr FROM players WHERE mobile = ? LIMIT 1");
             $checkStmt->execute([$mobile]);
-            if ($checkStmt->fetch()) {
+            $existingPlayer = $checkStmt->fetch(PDO::FETCH_ASSOC);
+            if ($existingPlayer) {
+                $duplicateFound = true;
+                $duplicatePlayerDetails = $existingPlayer;
                 $errorMsg = '❌ A player is already registered with this mobile number.';
             } else {
                 // Auto-generate unique registration reference (UTR)
@@ -559,5 +564,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             });
         }
     </script>
+
+    <?php if ($duplicateFound && $duplicatePlayerDetails): ?>
+        <!-- DUPLICATE REGISTRATION MODAL -->
+        <div id="duplicateModal" class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-zinc-950 border border-red-500/30 rounded-2xl p-6 shadow-2xl space-y-4 animate-scale-up">
+                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                    <h3 class="text-base font-bold text-red-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-exclamation text-red-500"></i> Registration Exists
+                    </h3>
+                    <button type="button" onclick="closeDuplicateModal()" class="text-gray-400 hover:text-white flex items-center justify-center w-6 h-6 rounded-full hover:bg-white/5">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        A player is already registered with this mobile number (<strong class="text-white"><?php echo htmlspecialchars($mobile); ?></strong>). Here are the details of the existing registration:
+                    </p>
+                    
+                    <div class="bg-black/60 border border-white/5 rounded-xl p-4 space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <div class="text-[8px] text-gray-500 font-bold uppercase tracking-wider">Candidate Name</div>
+                                <div class="text-sm font-bold text-white"><?php echo htmlspecialchars($duplicatePlayerDetails['name']); ?></div>
+                            </div>
+                            <div>
+                                <div class="text-[8px] text-gray-500 font-bold uppercase tracking-wider">Verification Status</div>
+                                <div>
+                                    <?php if ($duplicatePlayerDetails['payment_status'] === 'Verified'): ?>
+                                        <span class="bg-gold-950/60 border border-gold-500/20 text-gold-400 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wide">Verified</span>
+                                    <?php elseif ($duplicatePlayerDetails['payment_status'] === 'Rejected'): ?>
+                                        <span class="bg-red-950/60 border border-red-500/20 text-red-400 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wide">Rejected</span>
+                                    <?php else: ?>
+                                        <span class="bg-yellow-950/60 border border-yellow-500/20 text-yellow-400 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wide animate-pulse">Pending Payment/Approval</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 border-t border-white/5 pt-2">
+                            <div>
+                                <div class="text-[8px] text-gray-500 font-bold uppercase tracking-wider">Playing Role</div>
+                                <div class="text-xs font-bold text-gray-300"><?php echo htmlspecialchars($duplicatePlayerDetails['role']); ?></div>
+                            </div>
+                            <div>
+                                <div class="text-[8px] text-gray-500 font-bold uppercase tracking-wider">Place / Hometown</div>
+                                <div class="text-xs font-bold text-gray-300"><?php echo htmlspecialchars($duplicatePlayerDetails['place']); ?></div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-white/5 pt-2">
+                            <div class="text-[8px] text-gray-500 font-bold uppercase tracking-wider">Registration Reference ID</div>
+                            <div class="text-xs font-mono font-bold text-gold-400"><?php echo htmlspecialchars($duplicatePlayerDetails['payment_utr']); ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-center">
+                    <button type="button" onclick="closeDuplicateModal()"
+                            class="w-full bg-gradient-to-r from-red-600 to-amber-700 text-white font-extrabold uppercase text-[10px] tracking-wider py-3 rounded-xl hover:from-red-500 hover:to-amber-600 transition shadow-lg shadow-red-500/10">
+                        Okay, Close
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            function closeDuplicateModal() {
+                const modal = document.getElementById('duplicateModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            }
+        </script>
+    <?php endif; ?>
 </body>
 </html>
