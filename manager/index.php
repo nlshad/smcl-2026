@@ -151,7 +151,6 @@ try {
 
         <!-- CENTER SIDE: Active Auction Dashboard (8 Cols) -->
         <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-12 gap-6" id="auction-console">
-            
             <!-- Standby Box -->
             <div id="standby-box" class="col-span-12 glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center border border-gold-500/10 min-h-[380px]">
                 <i class="fa-solid fa-tower-broadcast text-5xl text-gold-400 animate-pulse mb-3 block"></i>
@@ -161,8 +160,8 @@ try {
                 </p>
             </div>
 
-            <!-- Player Profile (5 Cols) -->
-            <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
+            <!-- Player Profile (4 Cols) -->
+            <div id="player-card" class="hidden col-span-12 md:col-span-4 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
                     <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
                         <img src="" id="player-image" alt="Player" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
@@ -184,8 +183,8 @@ try {
                 </div>
             </div>
 
-            <!-- Bidding Action Controls (7 Cols) -->
-            <div id="bid-action-card" class="hidden col-span-12 md:col-span-7 space-y-6 flex flex-col justify-between">
+            <!-- Bidding Action Controls (5 Cols) -->
+            <div id="bid-action-card" class="hidden col-span-12 md:col-span-5 space-y-6 flex flex-col justify-between">
                 
                 <!-- Bidding Panel -->
                 <div class="glass-panel rounded-2xl p-5 border border-gold-500/15 flex-grow flex flex-col justify-between">
@@ -195,7 +194,12 @@ try {
                             <span class="text-[8px] uppercase tracking-widest font-bold text-red-400 bg-red-950/50 border border-red-500/20 px-1.5 py-0.5 rounded animate-pulse" id="high-bidder-indicator" style="display:none;">Leading</span>
                         </div>
                         <h3 class="text-4xl font-black text-white mt-1 tracking-tight" id="active-bid">₹0</h3>
-                        <p class="text-xs text-gray-400 mt-1" id="leading-team">No bids placed yet</p>
+                        <div class="flex items-center gap-2 mt-1.5" id="leading-team-wrapper">
+                            <div id="leading-team-logo-container" class="w-7 h-7 rounded bg-black/40 border border-gold-500/20 flex items-center justify-center overflow-hidden p-0.5" style="display: none;">
+                                <img src="" id="leading-team-logo" class="w-full h-full object-contain">
+                            </div>
+                            <p class="text-xs text-gray-400" id="leading-team">No bids placed yet</p>
+                        </div>
                     </div>
 
                     <!-- Bid Increments Buttons -->
@@ -213,13 +217,23 @@ try {
                             <input type="number" id="custom-bid-input" placeholder="Enter bid amount"
                                    class="flex-grow bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono">
                             <button id="custom-bid-submit" onclick="submitCustomBid()"
-                                    class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold uppercase text-[10px] tracking-wider px-5 rounded-xl transition">
+                                   class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold uppercase text-[10px] tracking-wider px-5 rounded-xl transition">
                                 Bid
                             </button>
                         </div>
                     </div>
                 </div>
             </div> <!-- Close Bidding Action Controls (#bid-action-card) -->
+
+            <!-- Bids Flow list in manager (3 Cols) -->
+            <div id="bid-history-card" class="hidden col-span-12 md:col-span-3 glass-panel rounded-2xl p-4 border border-gold-500/15 flex flex-col h-full overflow-y-auto">
+                <span class="block text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-2.5 border-b border-white/5 pb-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock-rotate-left text-gray-400"></i> Bid History
+                </span>
+                <div class="space-y-2 pr-1" id="manager-bids-stream">
+                    <!-- Polled list will render here -->
+                </div>
+            </div> <!-- Close Bids Flow list in manager (#bid-history-card) -->
         </div> <!-- Close Active Auction Dashboard (#auction-console) -->
     </div> <!-- Close Top Section (12 Cols Grid) -->
 
@@ -706,11 +720,15 @@ try {
                 const standbyBox = document.getElementById('standby-box');
                 const playerCard = document.getElementById('player-card');
                 const bidActionCard = document.getElementById('bid-action-card');
+                const bidHistoryCard = document.getElementById('bid-history-card');
 
                 if (data.current_player && data.status !== 'Idle') {
                     standbyBox.classList.add('hidden');
                     playerCard.classList.remove('hidden');
                     bidActionCard.classList.remove('hidden');
+                    if (bidHistoryCard) {
+                        bidHistoryCard.classList.remove('hidden');
+                    }
 
                     const newPlayerId = parseInt(data.current_player.id);
 
@@ -723,9 +741,23 @@ try {
 
                     // Update Bid details
                     document.getElementById('active-bid').innerText = "₹" + data.highest_bid;
-                    document.getElementById('leading-team').innerText = data.leading_team_name 
-                        ? `Held by: ${data.leading_team_name}` 
-                        : "Waiting for opening bid (Base Price: ₹" + data.current_player.base_price + ")";
+                    
+                    const leadingLogoContainer = document.getElementById('leading-team-logo-container');
+                    const leadingLogo = document.getElementById('leading-team-logo');
+                    const leadingTeamText = document.getElementById('leading-team');
+
+                    if (data.leading_team_name) {
+                        leadingTeamText.innerText = `Held by: ${data.leading_team_name}`;
+                        if (leadingLogoContainer && leadingLogo) {
+                            leadingLogo.src = data.leading_team_logo ? (uploadPath + data.leading_team_logo) : (uploadPath + 'team_placeholder.jpg');
+                            leadingLogoContainer.style.display = 'flex';
+                        }
+                    } else {
+                        leadingTeamText.innerText = "Waiting for opening bid (Base Price: ₹" + data.current_player.base_price + ")";
+                        if (leadingLogoContainer) {
+                            leadingLogoContainer.style.display = 'none';
+                        }
+                    }
 
                     // Toggle leading indicator
                     const indicator = document.getElementById('high-bidder-indicator');
@@ -751,6 +783,29 @@ try {
                     // Render Bids Increment Button Lists
                     renderBiddingButtons(data.highest_bid, isHighBidder);
 
+                    // Render Bids Stream logs (Flow History) in Franchise Manager Room
+                    const bidsStream = document.getElementById('manager-bids-stream');
+                    if (bidsStream) {
+                        bidsStream.innerHTML = '';
+                        if (data.bid_history && data.bid_history.length > 0) {
+                            data.bid_history.forEach(log => {
+                                const div = document.createElement('div');
+                                div.className = "flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5 text-[10px] hover:bg-white/10 transition duration-150";
+                                const logoSrc = log.team_logo ? (uploadPath + log.team_logo) : (uploadPath + 'team_placeholder.jpg');
+                                div.innerHTML = `
+                                    <div class="flex items-center gap-2">
+                                        <img src="${logoSrc}" class="w-5 h-5 rounded object-contain bg-black/40 p-0.5 border border-white/10">
+                                        <span class="text-gray-300 font-medium">${log.team_name}</span>
+                                    </div>
+                                    <span class="text-gold-400 font-extrabold">₹${Number(log.bid_amount).toLocaleString()}</span>
+                                `;
+                                bidsStream.appendChild(div);
+                            });
+                        } else {
+                            bidsStream.innerHTML = `<div class="text-center text-[9px] text-gray-600 py-3 font-semibold uppercase tracking-wider">No bids placed.</div>`;
+                        }
+                    }
+
                 } else {
                     // Player has transitioned off the block!
                     if (activePlayerId !== null) {
@@ -763,6 +818,9 @@ try {
                     standbyBox.classList.remove('hidden');
                     playerCard.classList.add('hidden');
                     bidActionCard.classList.add('hidden');
+                    if (bidHistoryCard) {
+                        bidHistoryCard.classList.add('hidden');
+                    }
                 }
 
             } catch (error) {
