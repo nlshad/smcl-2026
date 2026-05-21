@@ -898,7 +898,9 @@ try {
                     
                     tr.innerHTML = `
                         <td class="py-3 flex items-center gap-2.5">
-                            <img src="${imgUrl}" class="w-8.5 h-8.5 rounded object-cover bg-black/40 border border-white/10 shadow-sm">
+                            <div class="w-9 h-9 rounded overflow-hidden border border-white/10 bg-black/40 shadow-sm flex-shrink-0">
+                                <img src="${imgUrl}" class="w-full h-full object-cover">
+                            </div>
                             <span class="font-bold text-white">${escapeHtml(p.name)}</span>
                         </td>
                         <td class="py-3 text-gray-300 uppercase tracking-wider font-semibold text-[10px]">
