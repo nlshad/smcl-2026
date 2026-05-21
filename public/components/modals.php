@@ -80,7 +80,6 @@ if (!isset($uploadPath)) {
                                 <span class="text-gold-400 font-extrabold">₹${b.bid_amount}</span>
                                 <span class="text-gray-300 font-medium">${b.team_name}</span>
                             </div>
-                            <span class="text-[9px] text-gray-500 font-mono">${b.bid_time}</span>
                         `;
                         listEl.appendChild(row);
                     });

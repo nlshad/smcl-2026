@@ -430,7 +430,6 @@ try {
                                     <span class="text-gold-400 font-extrabold">₹${log.bid_amount}</span>
                                     <span class="text-gray-300">${log.team_name}</span>
                                 </div>
-                                <span class="text-[8px] text-gray-500 font-mono">${log.bid_time}</span>
                             `;
                             bidsStream.appendChild(div);
                         });

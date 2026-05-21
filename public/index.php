@@ -451,7 +451,6 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                                     <span class="text-gold-400 font-bold">₹${log.bid_amount}</span>
                                     <span class="text-gray-300 font-medium">${log.team_name}</span>
                                 </div>
-                                <span class="text-[9px] text-gray-500 font-mono">${log.bid_time}</span>
                             `;
                             historyList.appendChild(li);
                         });

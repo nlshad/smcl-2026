@@ -377,7 +377,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Place / Hometown</label>
-                        <input type="text" name="place" required placeholder="e.g. Panamaram"
+                        <input type="text" name="place" required placeholder="e.g. Palamukk"
                                class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/30 transition placeholder-gray-600"
                                value="<?php echo htmlspecialchars($place ?? ''); ?>">
                     </div>
