@@ -214,7 +214,7 @@ try {
                     <div class="mt-6 border-t border-white/5 pt-4">
                         <span class="block text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-2">Place Custom Bid (₹)</span>
                         <div class="flex gap-2">
-                            <input type="number" id="custom-bid-input" placeholder="Enter bid amount"
+                            <input type="number" id="custom-bid-input" placeholder="Enter bid amount" min="100" step="100"
                                    class="flex-grow bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono">
                             <button id="custom-bid-submit" onclick="submitCustomBid()"
                                    class="bg-gold-500 hover:bg-gold-400 text-black font-extrabold uppercase text-[10px] tracking-wider px-5 rounded-xl transition">
@@ -850,7 +850,7 @@ try {
             const grid = document.getElementById('quick-bids-grid');
             grid.innerHTML = '';
 
-            const increments = [50, 100, 200, 500];
+            const increments = [100, 200, 500, 1000];
             
             increments.forEach(inc => {
                 const targetBid = parseInt(highestBid) + inc;
@@ -933,6 +933,11 @@ try {
 
             if (customBid <= lastBidValue) {
                 showToast(`Bid must be strictly higher than current ₹${lastBidValue}.`, "error");
+                return;
+            }
+
+            if (customBid % 100 !== 0) {
+                showToast("Bid amount must be a multiple of 100.", "error");
                 return;
             }
 

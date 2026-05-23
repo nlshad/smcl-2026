@@ -118,7 +118,7 @@ try {
                             <div class="flex items-center gap-1.5">
                                 <div class="bg-black/60 border border-white/10 rounded-lg px-1.5 py-1 text-[10px] max-w-[65px] flex items-center">
                                     <span class="text-gray-600 font-bold">₹</span>
-                                    <input type="number" id="base_<?php echo $p['id']; ?>" value="<?php echo $p['base_price']; ?>" step="50" min="50"
+                                    <input type="number" id="base_<?php echo $p['id']; ?>" value="<?php echo $p['base_price']; ?>" step="100" min="100"
                                            class="w-full bg-transparent text-center font-bold text-gold-400 focus:outline-none">
                                 </div>
                                 <button onclick="bringToBlock(<?php echo $p['id']; ?>)"
@@ -467,8 +467,8 @@ try {
             const basePriceInput = document.getElementById('base_' + playerId);
             const basePrice = basePriceInput ? parseInt(basePriceInput.value) : 0;
 
-            if (isNaN(basePrice) || basePrice < 50) {
-                showToast("Please set a valid starting base price (minimum ₹50).", "error");
+            if (isNaN(basePrice) || basePrice < 100 || basePrice % 100 !== 0) {
+                showToast("Please set a valid starting base price (minimum ₹100 and multiple of 100).", "error");
                 return;
             }
 

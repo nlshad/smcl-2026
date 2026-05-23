@@ -30,6 +30,11 @@ try {
                 exit;
             }
 
+            if ($basePrice % 100 !== 0) {
+                echo json_encode(['success' => false, 'error' => 'Starting base price must be a multiple of 100.']);
+                exit;
+            }
+
             // Verify player is Verified and Available
             $stmt = $pdo->prepare("SELECT id, name, payment_status, auction_status FROM players WHERE id = :player_id");
             $stmt->execute(['player_id' => $playerId]);

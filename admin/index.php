@@ -24,10 +24,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $playerId = (int)$_POST['player_id'];
             $basePrice = (int)($_POST['base_price'] ?? 100);
 
-            // Update player status
-            $stmt = $pdo->prepare("UPDATE players SET payment_status = 'Verified', auction_status = 'Available', base_price = :base_price WHERE id = :id");
-            $stmt->execute(['base_price' => $basePrice, 'id' => $playerId]);
-            $successMsg = "🟢 Player payment verified. Player added to auction pool at base price of ₹$basePrice!";
+            if ($basePrice % 100 !== 0) {
+                $errorMsg = "❌ Base price must be a multiple of 100.";
+            } else {
+                // Update player status
+                $stmt = $pdo->prepare("UPDATE players SET payment_status = 'Verified', auction_status = 'Available', base_price = :base_price WHERE id = :id");
+                $stmt->execute(['base_price' => $basePrice, 'id' => $playerId]);
+                $successMsg = "🟢 Player payment verified. Player added to auction pool at base price of ₹$basePrice!";
+            }
         } elseif ($action === 'reject_player') {
             $playerId = (int)$_POST['player_id'];
             
@@ -110,6 +114,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if (empty($name) || empty($mobile) || empty($place) || empty($utr)) {
                 $errorMsg = "❌ All player edit fields are required.";
+            } elseif ($basePrice % 100 !== 0) {
+                $errorMsg = "❌ Base price must be a multiple of 100.";
+            } elseif ($soldPrice !== null && $soldPrice % 100 !== 0) {
+                $errorMsg = "❌ Sold price must be a multiple of 100.";
             } else {
                 // Optional profile image upload handling
                 $uploadedImage = false;
@@ -397,7 +405,7 @@ try {
                                                         <!-- Base Price Set Input -->
                                                         <div class="flex items-center bg-black/40 border border-white/10 rounded-lg px-1.5 py-1 max-w-[75px]">
                                                             <span class="text-gray-500 mr-0.5 font-bold">₹</span>
-                                                            <input type="number" name="base_price" value="100" min="50" step="50" required
+                                                            <input type="number" name="base_price" value="100" min="100" step="100" required
                                                                    class="w-full bg-transparent text-white focus:outline-none font-bold text-center text-[10px]">
                                                         </div>
                                                         <button type="submit" name="action" value="verify_player"
@@ -629,7 +637,7 @@ try {
                     <!-- Base Price -->
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Base Price (₹)</label>
-                        <input type="number" name="base_price" id="edit_player_base_price" min="50" step="50" required
+                        <input type="number" name="base_price" id="edit_player_base_price" min="100" step="100" required
                                class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
                     </div>
                 </div>
@@ -649,7 +657,7 @@ try {
                     <!-- Sold Price -->
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Sold Price (₹)</label>
-                        <input type="number" name="sold_price" id="edit_player_sold_price" min="0" step="50"
+                        <input type="number" name="sold_price" id="edit_player_sold_price" min="0" step="100"
                                class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500 transition font-mono font-bold">
                     </div>
                 </div>

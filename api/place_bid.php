@@ -35,6 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
+    if ($bidAmount % 100 !== 0) {
+        echo json_encode(['success' => false, 'error' => 'Bid amount must be a multiple of 100.']);
+        exit;
+    }
+
     try {
         // Start a database transaction for concurrency control
         $pdo->beginTransaction();
