@@ -142,6 +142,10 @@ try {
                 <p class="text-gray-400 max-w-sm mt-2 text-xs">
                     Select a cricket player from the left panel pool, adjust their opening base price if necessary, and click "Block" to commence live franchise bidding.
                 </p>
+                <button id="standby-random-player-btn" onclick="pickRandomPlayer()"
+                        class="mt-6 bg-gold-500 hover:bg-gold-400 text-black font-extrabold uppercase text-[10px] tracking-wider py-3.5 px-6 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-gold-500/15">
+                    <i class="fa-solid fa-shuffle"></i> Pick Random Player
+                </button>
             </div>
 
             <!-- Active Player Card (5 Cols) -->
@@ -202,6 +206,10 @@ try {
                                 class="w-full bg-zinc-800 hover:bg-zinc-700 text-gold-400 font-bold uppercase text-[10px] tracking-wider py-3 px-4 rounded-xl transition border border-gold-500/10">
                             pause bidding
                         </button>
+                        <button onclick="pickRandomPlayer()" id="random-player-btn"
+                                class="w-full bg-zinc-900 border border-gold-500/20 hover:border-gold-500/50 hover:bg-gold-500/10 text-gold-400 font-extrabold uppercase text-[10px] tracking-wider py-3 px-4 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-shuffle"></i> Random Next Player
+                        </button>
                         <div class="grid grid-cols-2 gap-3 mt-2">
                             <button onclick="triggerHistoryAction('undo')"
                                     class="w-full bg-zinc-950/80 border border-white/10 hover:border-gold-500/30 text-gray-300 hover:text-white font-extrabold uppercase text-[10px] tracking-wider py-2.5 px-4 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5">
@@ -235,6 +243,7 @@ try {
     <!-- JavaScript Controller -->
     <script>
         const uploadPath = "<?php echo $uploadPath; ?>";
+        const availablePlayers = <?php echo json_encode($availablePlayers); ?>;
         let activePlayerId = null;
         let lastBiddingStatus = 'Idle';
         let lastBidAmount = 0;
@@ -362,12 +371,23 @@ try {
                 const blockButtons = document.querySelectorAll('.block-action-btn');
 
                 // Toggle Standby vs Controls
+                const randomPlayerBtn = document.getElementById('random-player-btn');
+                const standbyRandomPlayerBtn = document.getElementById('standby-random-player-btn');
+
                 if (data.current_player && data.status !== 'Idle') {
                     blockButtons.forEach(btn => {
                         btn.disabled = true;
                         btn.classList.add('opacity-30', 'cursor-not-allowed');
                         btn.classList.remove('hover:bg-gold-400', 'active:scale-95');
                     });
+                    if (randomPlayerBtn) {
+                        randomPlayerBtn.disabled = true;
+                        randomPlayerBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    }
+                    if (standbyRandomPlayerBtn) {
+                        standbyRandomPlayerBtn.disabled = true;
+                        standbyRandomPlayerBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    }
 
                     standbyBox.classList.add('hidden');
                     playerCard.classList.remove('hidden');
@@ -443,6 +463,14 @@ try {
                         btn.classList.remove('opacity-30', 'cursor-not-allowed');
                         btn.classList.add('hover:bg-gold-400', 'active:scale-95');
                     });
+                    if (randomPlayerBtn) {
+                        randomPlayerBtn.disabled = false;
+                        randomPlayerBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                    }
+                    if (standbyRandomPlayerBtn) {
+                        standbyRandomPlayerBtn.disabled = false;
+                        standbyRandomPlayerBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                    }
 
                     standbyBox.classList.remove('hidden');
                     playerCard.classList.add('hidden');
@@ -457,6 +485,21 @@ try {
             }
         }
 
+        // Pick and block a random available player
+        function pickRandomPlayer() {
+            if (activePlayerId !== null) {
+                showToast("Finish current auction before blocking another player!", "error");
+                return;
+            }
+            if (!availablePlayers || availablePlayers.length === 0) {
+                showToast("No available players left in the pool!", "error");
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * availablePlayers.length);
+            const randomPlayer = availablePlayers[randomIndex];
+            bringToBlock(randomPlayer.id);
+        }
+
         // Action: Bring a Player to Block
         async function bringToBlock(playerId) {
             if (activePlayerId !== null) {
@@ -465,7 +508,13 @@ try {
             }
 
             const basePriceInput = document.getElementById('base_' + playerId);
-            const basePrice = basePriceInput ? parseInt(basePriceInput.value) : 0;
+            let basePrice = basePriceInput ? parseInt(basePriceInput.value) : 0;
+            if (isNaN(basePrice) || basePrice <= 0) {
+                const ply = availablePlayers.find(x => x.id == playerId);
+                if (ply) {
+                    basePrice = parseInt(ply.base_price);
+                }
+            }
 
             if (isNaN(basePrice) || basePrice < 100 || basePrice % 100 !== 0) {
                 showToast("Please set a valid starting base price (minimum ₹100 and multiple of 100).", "error");

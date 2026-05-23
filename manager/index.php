@@ -33,7 +33,7 @@ try {
     $availablePool = $stmt->fetchAll();
 
     // Fetch verified sold or unsold players
-    $stmt = $pdo->prepare("SELECT p.id, p.name, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
+    $stmt = $pdo->prepare("SELECT p.id, p.name, p.mobile, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
                            FROM players p 
                            LEFT JOIN teams t ON p.team_id = t.id 
                            WHERE p.payment_status = 'Verified' AND p.auction_status IN ('Sold', 'Unsold') 
@@ -696,6 +696,14 @@ try {
                             const row = document.createElement('div');
                             row.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs cursor-pointer hover:bg-white/10 transition group";
                             row.onclick = () => openPlayerDetailsModal(p.id);
+                            
+                            const cleanMobile = p.mobile ? p.mobile.replace(/\D/g, '') : '';
+                            let formattedMobile = cleanMobile;
+                            if (formattedMobile.length === 10) {
+                                formattedMobile = '91' + formattedMobile;
+                            }
+                            const waUrl = formattedMobile ? `https://wa.me/${formattedMobile}` : '#';
+
                             row.innerHTML = `
                                 <div class="flex items-center gap-3">
                                     <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md" onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
@@ -704,7 +712,16 @@ try {
                                         <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
                                     </div>
                                 </div>
-                                <span class="text-gold-400 font-mono font-bold">₹${p.sold_price}</span>
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-gold-400 font-mono font-bold">₹${p.sold_price}</span>
+                                    ${p.mobile ? `
+                                    <a href="${waUrl}" target="_blank" onclick="event.stopPropagation();" 
+                                       class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition duration-150 flex items-center justify-center" 
+                                       title="Message ${p.name} on WhatsApp">
+                                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                                    </a>
+                                    ` : ''}
+                                </div>
                             `;
                             squadListEl.appendChild(row);
                         });
