@@ -139,7 +139,32 @@ if (!isset($uploadPath)) {
                 }
             });
         }
+
+        const lModal = document.getElementById('image-lightbox-modal');
+        if (lModal) {
+            lModal.addEventListener('click', (e) => {
+                if (e.target.id === 'image-lightbox-modal') {
+                    closeImageLightbox();
+                }
+            });
+        }
     });
+
+    function openImageLightbox(imgSrc, altText) {
+        const modal = document.getElementById('image-lightbox-modal');
+        const img = document.getElementById('lightbox-image');
+        const caption = document.getElementById('lightbox-caption');
+        
+        img.src = imgSrc;
+        caption.innerText = altText || 'Player Photo';
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeImageLightbox() {
+        const modal = document.getElementById('image-lightbox-modal');
+        modal.classList.add('hidden');
+    }
 
     // Open Team details modal popup
     async function openTeamDetailsModal(teamId) {
@@ -181,7 +206,7 @@ if (!isset($uploadPath)) {
                     row.onclick = () => { closeTeamModal(); setTimeout(() => openPlayerDetailsModal(p.id), 200); };
                     row.innerHTML = `
                         <div class="flex items-center gap-3">
-                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
+                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox(this.src, '${p.name}');" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                             <div>
                                 <span class="text-white font-extrabold block group-hover:text-gold-400">${p.name}</span>
                                 <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
@@ -235,7 +260,7 @@ if (!isset($uploadPath)) {
             <!-- Player Banner Info -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-5 pb-5 border-b border-white/5">
                 <div class="flex flex-col sm:flex-row items-center gap-5">
-                    <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md">
+                    <div class="w-20 h-24 rounded-xl overflow-hidden border border-gold-500/30 bg-black/60 shadow-md cursor-zoom-in" onclick="openImageLightbox(document.getElementById('modal-player-image').src, document.getElementById('modal-player-name').innerText);">
                         <img src="" id="modal-player-image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                     </div>
                     <div class="text-center sm:text-left space-y-1.5">
@@ -339,5 +364,21 @@ if (!isset($uploadPath)) {
             </div>
 
         </div>
+    </div>
+</div>
+
+<!-- IMAGE LIGHTBOX MODAL -->
+<div id="image-lightbox-modal" class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden transition-all duration-300">
+    <div class="relative w-full max-w-2xl max-h-[85vh] flex flex-col items-center justify-center">
+        <!-- Close Button -->
+        <button onclick="closeImageLightbox()" class="absolute -top-12 right-0 sm:-right-4 w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <!-- Image element -->
+        <div class="rounded-2xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-2xl p-1 flex items-center justify-center max-w-full max-h-[75vh]">
+            <img id="lightbox-image" src="" alt="Enlarged Player Photo" class="max-w-full max-h-[72vh] object-contain rounded-xl">
+        </div>
+        <!-- Title/Caption -->
+        <div id="lightbox-caption" class="text-gold-400 font-bold uppercase text-[11px] tracking-wider mt-3.5 text-center"></div>
     </div>
 </div>
