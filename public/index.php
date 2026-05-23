@@ -181,26 +181,24 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             <div class="border-b border-white/5 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="text-base font-black text-gold-400 flex items-center gap-2 uppercase tracking-tight">
-                        <i class="fa-solid fa-clipboard-list text-base text-gray-400"></i> Completed Player Auctions
+                        <i class="fa-solid fa-clipboard-list text-base text-gray-400"></i> Player Auctions Status
                     </h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all finalized player auctions</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Real-time status of all verified player auctions</p>
                 </div>
                 <!-- Search and Filters Container -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 w-full sm:w-auto">
-                    <!-- Search Input -->
-                    <div class="relative w-full sm:w-60">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                        <input type="text" id="player-search-input" oninput="renderCompletedPlayers()" placeholder="Search players, roles, places, teams..."
-                               class="w-full bg-black/60 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-[11px] text-white focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition placeholder-gray-600">
+                    <!-- Filter Chips -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 scrollbar-none" id="public-status-filter-container">
+                        <button onclick="setStatusFilter('all')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">All</button>
+                        <button onclick="setStatusFilter('Sold')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Sold">Sold</button>
+                        <button onclick="setStatusFilter('Unsold')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Unsold">Unsold</button>
+                        <button onclick="setStatusFilter('Available')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Available">Available</button>
                     </div>
-                    <!-- Quick Filter / Summary Counters -->
-                    <div class="flex items-center gap-2 text-[10px] shrink-0">
-                        <span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-1.5 rounded-lg font-bold">
-                            Sold: <strong class="text-white text-xs font-black" id="count-sold">0</strong>
-                        </span>
-                        <span class="bg-red-500/10 border border-red-500/20 text-red-400 px-2.5 py-1.5 rounded-lg font-bold">
-                            Unsold: <strong class="text-white text-xs font-black" id="count-unsold">0</strong>
-                        </span>
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                        <input type="text" id="player-search-input" oninput="renderCompletedPlayers()" placeholder="Search players, roles, places..."
+                               class="w-full bg-black/60 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-[11px] text-white focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition placeholder-gray-600">
                     </div>
                 </div>
             </div>
@@ -229,6 +227,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
         let lastBidAmount = 0;
         let isMuted = false;
         let allCompletedPlayers = [];
+        let activeStatusFilter = 'all';
 
         // Premium Sound Engine (Zero-latency Web Audio API Synth)
         const SMCLSoundEngine = {
@@ -518,7 +517,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 }
 
                 // 4. Sync Completed Player Auctions
-                allCompletedPlayers = data.completed_players || [];
+                allCompletedPlayers = data.all_players || [];
                 renderCompletedPlayers();
 
             } catch (error) {
@@ -526,12 +525,27 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             }
         }
 
+        // Filter handler
+        function setStatusFilter(filterValue) {
+            activeStatusFilter = filterValue;
+            
+            // Update chip styles
+            const chips = document.querySelectorAll('#public-status-filter-container .status-chip');
+            chips.forEach(chip => {
+                if (chip.getAttribute('data-filter') === filterValue) {
+                    chip.className = "status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400";
+                } else {
+                    chip.className = "status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition";
+                }
+            });
+
+            renderCompletedPlayers();
+        }
+
         // Render completed players list dynamically (supports real-time search filtering)
         function renderCompletedPlayers() {
             const completedGrid = document.getElementById('completed-players-grid');
             const completedEmpty = document.getElementById('completed-empty-box');
-            const countSoldEl = document.getElementById('count-sold');
-            const countUnsoldEl = document.getElementById('count-unsold');
             const searchInput = document.getElementById('player-search-input');
             const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
@@ -539,18 +553,35 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 
             let soldCount = 0;
             let unsoldCount = 0;
+            let availableCount = 0;
 
             // Compute overall totals from unfiltered array
             allCompletedPlayers.forEach(p => {
                 if (p.auction_status === 'Sold') soldCount++;
-                if (p.auction_status === 'Unsold') unsoldCount++;
+                else if (p.auction_status === 'Unsold') unsoldCount++;
+                else if (p.auction_status === 'Available') availableCount++;
             });
 
-            countSoldEl.innerText = soldCount;
-            countUnsoldEl.innerText = unsoldCount;
+            // Update chip counts
+            const allChip = document.querySelector('#public-status-filter-container [data-filter="all"]');
+            if (allChip) allChip.innerText = `All (${allCompletedPlayers.length})`;
 
-            // Apply search query
+            const soldChip = document.querySelector('#public-status-filter-container [data-filter="Sold"]');
+            if (soldChip) soldChip.innerText = `Sold (${soldCount})`;
+
+            const unsoldChip = document.querySelector('#public-status-filter-container [data-filter="Unsold"]');
+            if (unsoldChip) unsoldChip.innerText = `Unsold (${unsoldCount})`;
+
+            const availChip = document.querySelector('#public-status-filter-container [data-filter="Available"]');
+            if (availChip) availChip.innerText = `Available (${availableCount})`;
+
+            // Apply search query and status filter
             const filteredPlayers = allCompletedPlayers.filter(p => {
+                // Status Filter
+                if (activeStatusFilter !== 'all' && p.auction_status !== activeStatusFilter) {
+                    return false;
+                }
+
                 if (!searchQuery) return true;
                 return (
                     p.name.toLowerCase().includes(searchQuery) ||
@@ -587,7 +618,9 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                             <span class="px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-extrabold ${
                                 p.auction_status === 'Sold' 
                                     ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' 
-                                    : 'bg-red-500/10 border border-red-500/25 text-red-400'
+                                    : (p.auction_status === 'Unsold' 
+                                        ? 'bg-red-500/10 border border-red-500/25 text-red-400' 
+                                        : 'bg-blue-500/10 border border-blue-500/25 text-blue-400')
                             }">
                                 ${p.auction_status}
                             </span>

@@ -36,7 +36,7 @@ try {
     $stmt = $pdo->prepare("SELECT p.id, p.name, p.mobile, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
                            FROM players p 
                            LEFT JOIN teams t ON p.team_id = t.id 
-                           WHERE p.payment_status = 'Verified' AND p.auction_status IN ('Sold', 'Unsold') 
+                           WHERE p.payment_status = 'Verified' AND p.auction_status IN ('Sold', 'Unsold', 'Available') 
                            ORDER BY p.id DESC");
     $stmt->execute();
     $completedPool = $stmt->fetchAll();
@@ -291,19 +291,28 @@ try {
                 </div>
             </div>
 
-            <!-- Block 2: Sold & Unsold Pool -->
+            <!-- Block 2: Player Auctions Status -->
             <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
-                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Completed</span>
-                        <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-check text-gray-400"></i> Sold & Unsold
-                        </h3>
+                <div class="border-b border-white/5 pb-4 mb-4 space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Player Status</span>
+                            <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check text-gray-400"></i> Player Auctions Status
+                            </h3>
+                        </div>
+                        <div class="relative w-36 sm:w-44">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                            <input type="text" id="completed-search-input" onkeyup="filterCompletedPlayers()" placeholder="Search status..." 
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+                        </div>
                     </div>
-                    <div class="relative w-48 sm:w-56">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                        <input type="text" id="completed-search-input" onkeyup="filterCompletedPlayers()" placeholder="Search sold/unsold..." 
-                               class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
+                    <!-- Filter Chips -->
+                    <div class="flex items-center gap-1 overflow-x-auto pb-1 shrink-0 scrollbar-none" id="manager-status-filter-container">
+                        <button onclick="setManagerStatusFilter('all')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">All</button>
+                        <button onclick="setManagerStatusFilter('Sold')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Sold">Sold</button>
+                        <button onclick="setManagerStatusFilter('Unsold')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Unsold">Unsold</button>
+                        <button onclick="setManagerStatusFilter('Available')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Available">Available</button>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="completed-pool-container">
@@ -327,10 +336,12 @@ try {
                                 <div class="flex-grow min-w-0">
                                     <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
                                         <span><?php echo htmlspecialchars($p['name']); ?></span>
-                                        <?php if ($p['auction_status'] === 'Unsold'): ?>
+                                        <?php if ($p['auction_status'] === 'Sold'): ?>
+                                            <span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to <?php echo htmlspecialchars($p['team_name']); ?></span>
+                                        <?php elseif ($p['auction_status'] === 'Unsold'): ?>
                                             <span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>
                                         <?php else: ?>
-                                            <span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to <?php echo htmlspecialchars($p['team_name']); ?></span>
+                                            <span class="text-[7px] font-bold text-blue-500 uppercase px-1 py-0.5 rounded bg-blue-500/10 border border-blue-500/25">Available</span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
@@ -338,12 +349,12 @@ try {
                                     </div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
-                                    <?php if ($p['auction_status'] === 'Unsold'): ?>
-                                        <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
-                                        <span class="text-gray-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
-                                    <?php else: ?>
+                                    <?php if ($p['auction_status'] === 'Sold'): ?>
                                         <span class="text-[8px] text-gray-500 uppercase block font-bold">Sold Price</span>
                                         <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['sold_price']); ?></span>
+                                    <?php else: ?>
+                                        <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
+                                        <span class="text-gray-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -373,6 +384,8 @@ try {
         let activeStatus = 'Idle';
         let isFirstBid = true;
         let isMuted = false;
+        let lastLiveData = null;
+        let activeManagerStatusFilter = 'all';
 
         // Premium Sound Engine (Zero-latency Web Audio API Synth)
         const SMCLSoundEngine = {
@@ -489,26 +502,33 @@ try {
             });
         }
 
-        // Search Filter for Sold & Unsold Completed Pool
-        function filterCompletedPlayers() {
-            const query = document.getElementById('completed-search-input').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.completed-player-card');
+        function setManagerStatusFilter(filterValue) {
+            activeManagerStatusFilter = filterValue;
             
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name') || '';
-                const role = card.getAttribute('data-role') || '';
-                const place = card.getAttribute('data-place') || '';
-                
-                if (name.includes(query) || role.includes(query) || place.includes(query)) {
-                    card.style.display = 'flex';
+            // Update chip styles
+            const chips = document.querySelectorAll('#manager-status-filter-container .status-chip');
+            chips.forEach(chip => {
+                if (chip.getAttribute('data-filter') === filterValue) {
+                    chip.className = "status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400";
                 } else {
-                    card.style.display = 'none';
+                    chip.className = "status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition";
                 }
             });
+
+            if (lastLiveData) {
+                syncPoolContainers(lastLiveData.all_players, lastLiveData.completed_players, lastLiveData.current_player_id);
+            }
         }
 
-        // Keep both Available and Sold/Unsold Containers in Sync
-        function syncPoolContainers(completedPlayers, currentBlockPlayerId) {
+        // Search Filter for Completed Pool using syncPoolContainers
+        function filterCompletedPlayers() {
+            if (lastLiveData) {
+                syncPoolContainers(lastLiveData.all_players, lastLiveData.completed_players, lastLiveData.current_player_id);
+            }
+        }
+
+        // Keep both Available and Sold/Unsold/Available Containers in Sync
+        function syncPoolContainers(allPlayers, completedPlayers, currentBlockPlayerId) {
             const availableContainer = document.getElementById('available-pool-container');
             const completedContainer = document.getElementById('completed-pool-container');
             
@@ -550,45 +570,101 @@ try {
                 }
             });
             
-            // 2. Add or update cards in Completed container
-            const completedCards = completedContainer.querySelectorAll('.completed-player-card');
-            const existingCompletedIds = new Set();
-            completedCards.forEach(card => {
-                existingCompletedIds.add(parseInt(card.getAttribute('data-id')));
-            });
-            
-            // Remove "No completed players yet" empty placeholder if we have players
-            const noCompletedMsg = completedContainer.querySelector('.no-players-msg');
-            if (completedMap.size > 0 && noCompletedMsg) {
-                noCompletedMsg.remove();
+            // Update Empty Status messages for Available pool
+            const noAvailableMsg = availableContainer.querySelector('.no-players-msg');
+            const currentAvailableCards = availableContainer.querySelectorAll('.available-player-card');
+            if (currentAvailableCards.length === 0 && !noAvailableMsg) {
+                const div = document.createElement('div');
+                div.className = 'text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg';
+                div.innerText = 'No available players.';
+                availableContainer.appendChild(div);
+            } else if (currentAvailableCards.length > 0 && noAvailableMsg) {
+                noAvailableMsg.remove();
             }
-            
-            // Render any missing completed cards (sorted most recent first)
-            (completedPlayers || []).forEach(p => {
-                const pid = parseInt(p.id);
-                if (!existingCompletedIds.has(pid)) {
+
+            // 2. Rebuild completed pool container dynamically (supporting chips & search query)
+            const searchInput = document.getElementById('completed-search-input');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            completedContainer.innerHTML = '';
+
+            let soldCount = 0;
+            let unsoldCount = 0;
+            let availableCount = 0;
+
+            // Compute counts from unfiltered array (allPlayers)
+            (allPlayers || []).forEach(p => {
+                if (p.auction_status === 'Sold') soldCount++;
+                else if (p.auction_status === 'Unsold') unsoldCount++;
+                else if (p.auction_status === 'Available') availableCount++;
+            });
+
+            // Update chip counts
+            const allChip = document.querySelector('#manager-status-filter-container [data-filter="all"]');
+            if (allChip) allChip.innerText = `All (${(allPlayers || []).length})`;
+
+            const soldChip = document.querySelector('#manager-status-filter-container [data-filter="Sold"]');
+            if (soldChip) soldChip.innerText = `Sold (${soldCount})`;
+
+            const unsoldChip = document.querySelector('#manager-status-filter-container [data-filter="Unsold"]');
+            if (unsoldChip) unsoldChip.innerText = `Unsold (${unsoldCount})`;
+
+            const availChip = document.querySelector('#manager-status-filter-container [data-filter="Available"]');
+            if (availChip) availChip.innerText = `Available (${availableCount})`;
+
+            // Filter players
+            const filteredPlayers = (allPlayers || []).filter(p => {
+                // Status Filter
+                if (activeManagerStatusFilter !== 'all' && p.auction_status !== activeManagerStatusFilter) {
+                    return false;
+                }
+
+                if (!searchQuery) return true;
+                return (
+                    p.name.toLowerCase().includes(searchQuery) ||
+                    p.role.toLowerCase().includes(searchQuery) ||
+                    p.place.toLowerCase().includes(searchQuery) ||
+                    (p.team_name && p.team_name.toLowerCase().includes(searchQuery))
+                );
+            });
+
+            if (filteredPlayers.length > 0) {
+                filteredPlayers.forEach(p => {
                     const card = document.createElement('div');
                     card.className = "completed-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative";
-                    card.setAttribute('data-id', pid);
+                    card.setAttribute('data-id', p.id);
                     card.setAttribute('data-name', p.name.toLowerCase());
                     card.setAttribute('data-role', p.role.toLowerCase());
                     card.setAttribute('data-place', p.place.toLowerCase());
-                    card.onclick = () => openPlayerDetailsModal(pid);
+                    card.onclick = () => openPlayerDetailsModal(p.id);
+
+                    const profileImg = p.profile_image ? p.profile_image : 'player_placeholder.jpg';
                     
-                    const isUnsold = p.auction_status === 'Unsold';
-                    const statusBadge = isUnsold 
-                        ? `<span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>`
-                        : `<span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to ${p.team_name}</span>`;
-                        
-                    const rightSide = isUnsold
-                        ? `<span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
-                           <span class="text-gray-400 font-mono font-bold text-xs">₹${Number(p.base_price).toLocaleString()}</span>`
-                        : `<span class="text-[8px] text-gray-500 uppercase block font-bold">Sold Price</span>
-                           <span class="text-gold-400 font-mono font-bold text-xs">₹${Number(p.sold_price).toLocaleString()}</span>`;
-                    
+                    let statusBadge = '';
+                    if (p.auction_status === 'Sold') {
+                        statusBadge = `<span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to ${p.team_name}</span>`;
+                    } else if (p.auction_status === 'Unsold') {
+                        statusBadge = `<span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>`;
+                    } else {
+                        statusBadge = `<span class="text-[7px] font-bold text-blue-500 uppercase px-1 py-0.5 rounded bg-blue-500/10 border border-blue-500/25">Available</span>`;
+                    }
+
+                    let rightSide = '';
+                    if (p.auction_status === 'Sold') {
+                        rightSide = `
+                            <span class="text-[8px] text-gray-500 uppercase block font-bold">Sold Price</span>
+                            <span class="text-gold-400 font-mono font-bold text-xs">₹${Number(p.sold_price).toLocaleString()}</span>
+                        `;
+                    } else {
+                        rightSide = `
+                            <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
+                            <span class="text-gray-400 font-mono font-bold text-xs">₹${Number(p.base_price).toLocaleString()}</span>
+                        `;
+                    }
+
                     card.innerHTML = `
                         <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
-                            <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" 
+                            <img src="${uploadPath}${profileImg}" 
                                  alt="Player" class="w-full h-full object-cover" 
                                  onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
                         </div>
@@ -605,33 +681,14 @@ try {
                             ${rightSide}
                         </div>
                     `;
-                    
-                    completedContainer.insertBefore(card, completedContainer.firstChild);
-                } else {
-                    // Sync badge state if needed
-                    const card = completedContainer.querySelector(`.completed-player-card[data-id="${pid}"]`);
-                    if (card) {
-                        const isUnsold = p.auction_status === 'Unsold';
-                        const statusSpan = card.querySelector('.font-bold.text-white > span:last-child');
-                        if (statusSpan && statusSpan !== card.querySelector('.font-bold.text-white > span:first-child')) {
-                            statusSpan.outerHTML = isUnsold 
-                                ? `<span class="text-[7px] font-bold text-yellow-500 uppercase px-1 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25">Unsold</span>`
-                                : `<span class="text-[7px] font-bold text-green-500 uppercase px-1 py-0.5 rounded bg-green-500/10 border border-green-500/25">Sold to ${p.team_name}</span>`;
-                        }
-                    }
-                }
-            });
-            
-            // Update Empty Status messages for Available pool
-            const noAvailableMsg = availableContainer.querySelector('.no-players-msg');
-            const currentAvailableCards = availableContainer.querySelectorAll('.available-player-card');
-            if (currentAvailableCards.length === 0 && !noAvailableMsg) {
+
+                    completedContainer.appendChild(card);
+                });
+            } else {
                 const div = document.createElement('div');
                 div.className = 'text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg';
-                div.innerText = 'No available players.';
-                availableContainer.appendChild(div);
-            } else if (currentAvailableCards.length > 0 && noAvailableMsg) {
-                noAvailableMsg.remove();
+                div.innerText = searchQuery ? 'No players match your query.' : 'No completed players yet.';
+                completedContainer.appendChild(div);
             }
         }
 
@@ -652,6 +709,8 @@ try {
                     console.error(data.error);
                     return;
                 }
+
+                lastLiveData = data;
 
                 // 1. Update Status Indicator
                 const statusLight = document.getElementById('status-light');
@@ -732,7 +791,7 @@ try {
                 }
 
                 // 2.7 Update Available and Completed Pools dynamically
-                syncPoolContainers(data.completed_players, data.current_player_id);
+                syncPoolContainers(data.all_players, data.completed_players, data.current_player_id);
 
                 // 3. Layout Switches based on Bidding Player
                 const standbyBox = document.getElementById('standby-box');
