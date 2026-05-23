@@ -94,7 +94,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-gold-500/10 to-transparent pointer-events-none"></div>
                 <!-- Profile Image -->
                 <div class="p-5 flex-grow flex flex-col items-center justify-center">
-                    <div class="w-36 h-40 rounded-xl overflow-hidden border-2 border-gold-500/30 bg-black/60 shadow-lg relative flex items-center justify-center">
+                    <div class="w-36 h-40 rounded-xl overflow-hidden border-2 border-gold-500/30 bg-black/60 shadow-lg relative flex items-center justify-center cursor-zoom-in" onclick="openImageLightbox(document.getElementById('player-image').src, document.getElementById('player-name').innerText);">
                         <img src="uploads/player_placeholder.jpg" id="player-image" alt="Player Image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='uploads/player_placeholder.jpg';">
                         <div class="absolute top-2 right-2 bg-black/70 px-2 py-0.5 rounded text-[8px] border border-white/10 uppercase tracking-wider text-gold-400" id="player-status-tag">
                             Bidding

@@ -151,7 +151,7 @@ try {
             <!-- Active Player Card (5 Cols) -->
             <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl p-5 border border-gold-500/15 flex flex-col justify-between">
                 <div class="flex-grow flex flex-col items-center justify-center">
-                    <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative">
+                    <div class="w-32 h-36 rounded-xl overflow-hidden border border-gold-500/20 bg-black/60 relative cursor-zoom-in" onclick="openImageLightbox(document.getElementById('player-image').src, document.getElementById('player-name').innerText);">
                         <img src="" id="player-image" alt="Player Image" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                     </div>
                     <div class="text-center mt-4">

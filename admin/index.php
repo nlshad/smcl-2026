@@ -365,7 +365,7 @@ try {
                                         data-status="<?php echo htmlspecialchars(strtolower($p['payment_status'])); ?>">
                                         <!-- Player photo + name -->
                                         <td class="py-3.5 pr-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition rounded-lg p-2" onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40">
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40 cursor-zoom-in flex-shrink-0" onclick="event.stopPropagation(); openImageLightbox(this.querySelector('img').src, '<?php echo htmlspecialchars(addslashes($p['name'])); ?>')">
                                                 <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" alt="Profile" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                                             </div>
                                             <div>
@@ -906,7 +906,7 @@ try {
                     
                     tr.innerHTML = `
                         <td class="py-3 flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded overflow-hidden border border-white/10 bg-black/40 shadow-sm flex-shrink-0">
+                            <div class="w-9 h-9 rounded overflow-hidden border border-white/10 bg-black/40 shadow-sm flex-shrink-0 cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('${imgUrl}', '${escapeHtml(p.name)}');">
                                 <img src="${imgUrl}" class="w-full h-full object-cover">
                             </div>
                             <span class="font-bold text-white">${escapeHtml(p.name)}</span>
