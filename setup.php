@@ -52,7 +52,7 @@ try {
         total_purse INT DEFAULT 10000,
         remaining_purse INT DEFAULT 10000,
         current_squad_size INT DEFAULT 0,
-        max_squad_size INT DEFAULT 15,
+        max_squad_size INT DEFAULT 11,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;");
     $message[] = "🟢 Table 'teams' created.";

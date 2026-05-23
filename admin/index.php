@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
 
                     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, ?, ?, ?, ?, ?, 0, 15)");
+                    $stmt = $pdo->prepare("INSERT INTO teams (team_name, logo, manager_username, manager_password, total_purse, remaining_purse, current_squad_size, max_squad_size) VALUES (?, ?, ?, ?, ?, ?, 0, 11)");
                     $stmt->execute([$teamName, $logoName, $username, $hashedPassword, $purse, $purse]);
                     $successMsg = "🎉 Franchise Team '$teamName' created successfully! Manager can log in with username '$username'.";
                 }
@@ -191,7 +191,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = trim($_POST['username'] ?? '');
             $purse = (int)($_POST['purse'] ?? 10000);
             $remPurse = (int)($_POST['remaining_purse'] ?? 10000);
-            $maxSquad = (int)($_POST['max_squad_size'] ?? 15);
+            $maxSquad = (int)($_POST['max_squad_size'] ?? 11);
 
             if (empty($teamName) || empty($username)) {
                 $errorMsg = "❌ All team edit fields are required.";
@@ -821,7 +821,7 @@ try {
                 </div>
                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
                     <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Squad Size</div>
-                    <div id="view_team_squad_size" class="text-xs font-black text-white">0 / 15</div>
+                    <div id="view_team_squad_size" class="text-xs font-black text-white">0 / 11</div>
                 </div>
                 <div class="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
                     <div class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Manager</div>
