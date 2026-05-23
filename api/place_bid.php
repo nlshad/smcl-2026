@@ -93,21 +93,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // 4. Verify that this bid is higher than the current bid in the auction state
         $currentHighest = (int)$state['current_bid_amount'];
-        if ($bidAmount <= $currentHighest) {
-            echo json_encode(['success' => false, 'error' => "Bid must be higher than the current bid of ₹{$currentHighest}."]);
-            $pdo->rollBack();
-            exit;
+        $isFirstBid = ($state['current_highest_bidder_id'] === null);
+
+        if ($isFirstBid) {
+            if ($bidAmount < $currentHighest) {
+                echo json_encode(['success' => false, 'error' => "Opening bid must be at least the base price of ₹{$currentHighest}."]);
+                $pdo->rollBack();
+                exit;
+            }
+        } else {
+            if ($bidAmount <= $currentHighest) {
+                echo json_encode(['success' => false, 'error' => "Bid must be higher than the current bid of ₹{$currentHighest}."]);
+                $pdo->rollBack();
+                exit;
+            }
         }
 
         // Double check against bids table max (failsafe)
         $stmt = $pdo->prepare("SELECT MAX(bid_amount) as max_bid FROM bids WHERE player_id = :player_id");
         $stmt->execute(['player_id' => $playerId]);
-        $dbMax = (int)$stmt->fetch()['max_bid'];
+        $dbMaxRow = $stmt->fetch();
+        $dbMax = $dbMaxRow['max_bid'] !== null ? (int)$dbMaxRow['max_bid'] : null;
 
-        if ($bidAmount <= $dbMax) {
-            echo json_encode(['success' => false, 'error' => "A higher bid of ₹{$dbMax} was already submitted."]);
-            $pdo->rollBack();
-            exit;
+        if ($dbMax !== null) {
+            if ($bidAmount <= $dbMax) {
+                echo json_encode(['success' => false, 'error' => "A higher bid of ₹{$dbMax} was already submitted."]);
+                $pdo->rollBack();
+                exit;
+            }
         }
 
         // 5. Insert bid log row

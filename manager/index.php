@@ -371,6 +371,7 @@ try {
         let myMaxSquad = <?php echo $team['max_squad_size']; ?>;
         let lastBidValue = 0;
         let activeStatus = 'Idle';
+        let isFirstBid = true;
         let isMuted = false;
 
         // Premium Sound Engine (Zero-latency Web Audio API Synth)
@@ -797,8 +798,10 @@ try {
                         lastBidValue = parseInt(data.highest_bid);
                     }
 
+                    isFirstBid = !data.leading_team_id;
+
                     // Render Bids Increment Button Lists
-                    renderBiddingButtons(data.highest_bid, isHighBidder);
+                    renderBiddingButtons(data.highest_bid, isHighBidder, isFirstBid);
 
                     // Render Bids Stream logs (Flow History) in Franchise Manager Room
                     const bidsStream = document.getElementById('manager-bids-stream');
@@ -863,18 +866,29 @@ try {
         }
 
         // Render adaptive button grids
-        function renderBiddingButtons(highestBid, isHighBidder) {
+        function renderBiddingButtons(highestBid, isHighBidder, isFirstBid) {
             const grid = document.getElementById('quick-bids-grid');
             grid.innerHTML = '';
 
-            const increments = [100, 200, 500, 1000];
+            let bids = [];
+            if (isFirstBid) {
+                bids.push({ label: 'Opening Bid', amount: parseInt(highestBid) });
+                bids.push({ label: '+₹100', amount: parseInt(highestBid) + 100 });
+                bids.push({ label: '+₹200', amount: parseInt(highestBid) + 200 });
+                bids.push({ label: '+₹500', amount: parseInt(highestBid) + 500 });
+            } else {
+                bids.push({ label: '+₹100', amount: parseInt(highestBid) + 100 });
+                bids.push({ label: '+₹200', amount: parseInt(highestBid) + 200 });
+                bids.push({ label: '+₹500', amount: parseInt(highestBid) + 500 });
+                bids.push({ label: '+₹1000', amount: parseInt(highestBid) + 1000 });
+            }
             
-            increments.forEach(inc => {
-                const targetBid = parseInt(highestBid) + inc;
+            bids.forEach(b => {
+                const targetBid = b.amount;
                 const button = document.createElement('button');
                 button.className = "bid-btn w-full bg-zinc-900 border border-gold-500/20 text-gold-400 rounded-xl py-3 text-xs font-bold transition disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center";
                 button.innerHTML = `
-                    <span class="text-[9px] uppercase tracking-wider text-gray-500">+₹${inc}</span>
+                    <span class="text-[9px] uppercase tracking-wider text-gray-500">${b.label}</span>
                     <span class="text-sm font-black mt-0.5">₹${targetBid}</span>
                 `;
 
@@ -948,9 +962,16 @@ try {
                 return;
             }
 
-            if (customBid <= lastBidValue) {
-                showToast(`Bid must be strictly higher than current ₹${lastBidValue}.`, "error");
-                return;
+            if (isFirstBid) {
+                if (customBid < lastBidValue) {
+                    showToast(`Bid must be at least opening base price ₹${lastBidValue}.`, "error");
+                    return;
+                }
+            } else {
+                if (customBid <= lastBidValue) {
+                    showToast(`Bid must be strictly higher than current ₹${lastBidValue}.`, "error");
+                    return;
+                }
             }
 
             if (customBid % 100 !== 0) {
