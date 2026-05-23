@@ -189,10 +189,10 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 w-full sm:w-auto">
                     <!-- Filter Chips -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 scrollbar-none" id="public-status-filter-container">
-                        <button onclick="setStatusFilter('all')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">All</button>
-                        <button onclick="setStatusFilter('Sold')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Sold">Sold</button>
-                        <button onclick="setStatusFilter('Unsold')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Unsold">Unsold</button>
-                        <button onclick="setStatusFilter('Available')" class="status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Available">Available</button>
+                        <button onclick="setStatusFilter('all')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">ALL</button>
+                        <button onclick="setStatusFilter('Sold')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Sold">SOLD</button>
+                        <button onclick="setStatusFilter('Unsold')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Unsold">UNSOLD</button>
+                        <button onclick="setStatusFilter('Available')" class="status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Available">AVAILABLE</button>
                     </div>
                     <!-- Search Input -->
                     <div class="relative w-full sm:w-56">
@@ -535,7 +535,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 if (chip.getAttribute('data-filter') === filterValue) {
                     chip.className = "status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400";
                 } else {
-                    chip.className = "status-chip px-3 py-1.5 rounded-lg border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition";
+                    chip.className = "status-chip px-3 py-1.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white";
                 }
             });
 
@@ -564,16 +564,16 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
 
             // Update chip counts
             const allChip = document.querySelector('#public-status-filter-container [data-filter="all"]');
-            if (allChip) allChip.innerText = `All (${allCompletedPlayers.length})`;
+            if (allChip) allChip.innerText = `ALL (${allCompletedPlayers.length})`;
 
             const soldChip = document.querySelector('#public-status-filter-container [data-filter="Sold"]');
-            if (soldChip) soldChip.innerText = `Sold (${soldCount})`;
+            if (soldChip) soldChip.innerText = `SOLD (${soldCount})`;
 
             const unsoldChip = document.querySelector('#public-status-filter-container [data-filter="Unsold"]');
-            if (unsoldChip) unsoldChip.innerText = `Unsold (${unsoldCount})`;
+            if (unsoldChip) unsoldChip.innerText = `UNSOLD (${unsoldCount})`;
 
             const availChip = document.querySelector('#public-status-filter-container [data-filter="Available"]');
-            if (availChip) availChip.innerText = `Available (${availableCount})`;
+            if (availChip) availChip.innerText = `AVAILABLE (${availableCount})`;
 
             // Apply search query and status filter
             const filteredPlayers = allCompletedPlayers.filter(p => {

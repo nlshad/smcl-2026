@@ -309,10 +309,10 @@ try {
                     </div>
                     <!-- Filter Chips -->
                     <div class="flex items-center gap-1 overflow-x-auto pb-1 shrink-0 scrollbar-none" id="manager-status-filter-container">
-                        <button onclick="setManagerStatusFilter('all')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">All</button>
-                        <button onclick="setManagerStatusFilter('Sold')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Sold">Sold</button>
-                        <button onclick="setManagerStatusFilter('Unsold')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Unsold">Unsold</button>
-                        <button onclick="setManagerStatusFilter('Available')" class="status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition" data-filter="Available">Available</button>
+                        <button onclick="setManagerStatusFilter('all')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400" data-filter="all">ALL</button>
+                        <button onclick="setManagerStatusFilter('Sold')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Sold">SOLD</button>
+                        <button onclick="setManagerStatusFilter('Unsold')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Unsold">UNSOLD</button>
+                        <button onclick="setManagerStatusFilter('Available')" class="status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white" data-filter="Available">AVAILABLE</button>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="completed-pool-container">
@@ -511,7 +511,7 @@ try {
                 if (chip.getAttribute('data-filter') === filterValue) {
                     chip.className = "status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition bg-gold-500/10 border-gold-500 text-gold-400";
                 } else {
-                    chip.className = "status-chip px-2.5 py-1 rounded border border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white transition";
+                    chip.className = "status-chip px-2.5 py-1 rounded border text-[9px] uppercase font-bold tracking-wider transition border-white/5 bg-zinc-900 text-gray-400 hover:border-white/10 hover:text-white";
                 }
             });
 
@@ -601,16 +601,16 @@ try {
 
             // Update chip counts
             const allChip = document.querySelector('#manager-status-filter-container [data-filter="all"]');
-            if (allChip) allChip.innerText = `All (${(allPlayers || []).length})`;
+            if (allChip) allChip.innerText = `ALL (${(allPlayers || []).length})`;
 
             const soldChip = document.querySelector('#manager-status-filter-container [data-filter="Sold"]');
-            if (soldChip) soldChip.innerText = `Sold (${soldCount})`;
+            if (soldChip) soldChip.innerText = `SOLD (${soldCount})`;
 
             const unsoldChip = document.querySelector('#manager-status-filter-container [data-filter="Unsold"]');
-            if (unsoldChip) unsoldChip.innerText = `Unsold (${unsoldCount})`;
+            if (unsoldChip) unsoldChip.innerText = `UNSOLD (${unsoldCount})`;
 
             const availChip = document.querySelector('#manager-status-filter-container [data-filter="Available"]');
-            if (availChip) availChip.innerText = `Available (${availableCount})`;
+            if (availChip) availChip.innerText = `AVAILABLE (${availableCount})`;
 
             // Filter players
             const filteredPlayers = (allPlayers || []).filter(p => {
