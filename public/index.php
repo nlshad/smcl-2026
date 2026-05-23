@@ -605,7 +605,7 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                         <div class="flex items-center justify-between pb-4 border-b border-white/5">
                             <div class="flex items-center gap-3.5">
                                 <!-- Player Profile Picture -->
-                                <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('uploads/' + (p.profile_image ? p.profile_image : 'player_placeholder.jpg'), `${p.name}`);">
+                                <div class="w-12 h-12 rounded-xl overflow-hidden border border-gold-500/25 bg-black/60 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('uploads/' + (p.profile_image ? p.profile_image : 'player_placeholder.jpg'), '${p.name.replace(/'/g, "\\\'")}');">
                                     <img src="uploads/${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='uploads/player_placeholder.jpg';">
                                 </div>
                                 <!-- Name & Details -->

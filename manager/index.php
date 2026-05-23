@@ -541,7 +541,7 @@ try {
                     }
 
                     card.innerHTML = `
-                        <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0 cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('${uploadPath}${profileImg}', '${p.name}');">
+                        <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0 cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('${uploadPath}${profileImg}', '${p.name.replace(/'/g, "\\\'")}');">
                             <img src="${uploadPath}${profileImg}" 
                                  alt="Player" class="w-full h-full object-cover" 
                                  onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
@@ -644,7 +644,7 @@ try {
 
                             row.innerHTML = `
                                 <div class="flex items-center gap-3">
-                                    <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox(this.src, '${p.name}');" onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
+                                    <img src="${uploadPath}${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox(this.src, '${p.name.replace(/'/g, "\\\'")}');" onerror="this.onerror=null; this.src='${uploadPath}player_placeholder.jpg';">
                                     <div>
                                         <span class="text-white font-extrabold block">${p.name}</span>
                                         <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>

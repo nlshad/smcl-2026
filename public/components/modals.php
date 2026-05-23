@@ -206,7 +206,7 @@ if (!isset($uploadPath)) {
                     row.onclick = () => { closeTeamModal(); setTimeout(() => openPlayerDetailsModal(p.id), 200); };
                     row.innerHTML = `
                         <div class="flex items-center gap-3">
-                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox(this.src, '${p.name}');" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
+                            <img src="<?php echo $uploadPath; ?>${p.profile_image ? p.profile_image : 'player_placeholder.jpg'}" class="w-8 h-8 rounded-md object-cover border border-gold-500/20 shadow-md cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox(this.src, '${p.name.replace(/'/g, "\\\'")}');" onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
                             <div>
                                 <span class="text-white font-extrabold block group-hover:text-gold-400">${p.name}</span>
                                 <span class="text-[9px] text-gray-400 uppercase tracking-wider">${p.role}</span>
