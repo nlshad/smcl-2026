@@ -27,10 +27,7 @@ try {
         exit;
     }
 
-    // Fetch verified available players
-    $stmt = $pdo->prepare("SELECT id, name, place, role, profile_image, base_price, auction_status FROM players WHERE payment_status = 'Verified' AND auction_status = 'Available' ORDER BY id ASC");
-    $stmt->execute();
-    $availablePool = $stmt->fetchAll();
+
 
     // Fetch verified sold or unsold players
     $stmt = $pdo->prepare("SELECT p.id, p.name, p.mobile, p.place, p.role, p.profile_image, p.base_price, p.sold_price, p.auction_status, t.team_name, t.logo as team_logo 
@@ -237,60 +234,9 @@ try {
         </div> <!-- Close Active Auction Dashboard (#auction-console) -->
     </div> <!-- Close Top Section (12 Cols Grid) -->
 
-    <!-- Bottom Section: Pools (Side-by-side, 6 Cols each) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Bottom Section: Player Auctions Status (Full Width) -->
+    <div class="w-full">
             
-            <!-- Block 1: Available Pool -->
-            <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
-                <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">SMCL Pool</span>
-                        <h3 class="text-base font-extrabold text-gold-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-baseball-bat-ball text-gray-400"></i> Available
-                        </h3>
-                    </div>
-                    <div class="relative w-48 sm:w-56">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                        <input type="text" id="available-search-input" onkeyup="filterAvailablePlayers()" placeholder="Search available..." 
-                               class="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition">
-                    </div>
-                </div>
-                <div class="flex-grow overflow-y-auto max-h-[300px] space-y-2.5 pr-1" id="available-pool-container">
-                    <?php if (empty($availablePool)): ?>
-                        <div class="text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg">
-                            No available players.
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($availablePool as $p): ?>
-                            <div class="available-player-card p-3 bg-white/5 border border-white/5 hover:border-gold-500/30 rounded-xl flex items-center gap-3 transition cursor-pointer relative" 
-                                 data-id="<?php echo $p['id']; ?>"
-                                 data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
-                                 data-role="<?php echo htmlspecialchars(strtolower($p['role'])); ?>"
-                                 data-place="<?php echo htmlspecialchars(strtolower($p['place'])); ?>"
-                                 onclick="openPlayerDetailsModal(<?php echo $p['id']; ?>)">
-                                <div class="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0">
-                                    <img src="<?php echo $uploadPath; ?><?php echo htmlspecialchars($p['profile_image'] ?: 'player_placeholder.jpg'); ?>" 
-                                         alt="Player" class="w-full h-full object-cover" 
-                                         onerror="this.onerror=null; this.src='<?php echo $uploadPath; ?>player_placeholder.jpg';">
-                                </div>
-                                <div class="flex-grow min-w-0">
-                                    <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
-                                        <span><?php echo htmlspecialchars($p['name']); ?></span>
-                                    </div>
-                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 truncate">
-                                        <?php echo htmlspecialchars($p['role']); ?> | <span class="text-gray-400"><?php echo htmlspecialchars($p['place']); ?></span>
-                                    </div>
-                                </div>
-                                <div class="text-right flex-shrink-0">
-                                    <span class="text-[8px] text-gray-500 uppercase block font-bold">Base</span>
-                                    <span class="text-gold-400 font-mono font-bold text-xs">₹<?php echo number_format($p['base_price']); ?></span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-
             <!-- Block 2: Player Auctions Status -->
             <div class="glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col min-h-[350px]">
                 <div class="border-b border-white/5 pb-4 mb-4 space-y-3">
@@ -363,7 +309,7 @@ try {
                 </div>
             </div>
 
-        </div>
+    </div>
     </main>
 
     <!-- Footer -->
@@ -484,23 +430,6 @@ try {
             }
         }
 
-        // Search Filter for Available Pool
-        function filterAvailablePlayers() {
-            const query = document.getElementById('available-search-input').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.available-player-card');
-            
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name') || '';
-                const role = card.getAttribute('data-role') || '';
-                const place = card.getAttribute('data-place') || '';
-                
-                if (name.includes(query) || role.includes(query) || place.includes(query)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
 
         function setManagerStatusFilter(filterValue) {
             activeManagerStatusFilter = filterValue;
@@ -527,62 +456,11 @@ try {
             }
         }
 
-        // Keep both Available and Sold/Unsold/Available Containers in Sync
+        // Keep Player Auctions Status Container in Sync
         function syncPoolContainers(allPlayers, completedPlayers, currentBlockPlayerId) {
-            const availableContainer = document.getElementById('available-pool-container');
             const completedContainer = document.getElementById('completed-pool-container');
             
-            const completedMap = new Map();
-            (completedPlayers || []).forEach(p => {
-                completedMap.set(parseInt(p.id), p);
-            });
-            
-            // 1. Process cards in the Available container
-            const availableCards = availableContainer.querySelectorAll('.available-player-card');
-            availableCards.forEach(card => {
-                const cardId = parseInt(card.getAttribute('data-id'));
-                
-                if (completedMap.has(cardId)) {
-                    card.remove();
-                } else {
-                    // Highlight if active player on block
-                    if (cardId === currentBlockPlayerId) {
-                        card.classList.add('border-gold-500/50', 'bg-gold-500/10', 'ring-1', 'ring-gold-500/30');
-                        card.classList.remove('border-white/5', 'bg-white/5');
-                        
-                        let liveBadge = card.querySelector('.live-badge');
-                        if (!liveBadge) {
-                            liveBadge = document.createElement('span');
-                            liveBadge.className = 'live-badge absolute top-1 right-1 bg-red-600 text-white text-[6px] font-extrabold px-1 rounded uppercase tracking-wider animate-pulse';
-                            liveBadge.innerText = 'Live';
-                            card.style.position = 'relative';
-                            card.appendChild(liveBadge);
-                        }
-                    } else {
-                        card.classList.remove('border-gold-500/50', 'bg-gold-500/10', 'ring-1', 'ring-gold-500/30');
-                        card.classList.add('border-white/5', 'bg-white/5');
-                        
-                        const liveBadge = card.querySelector('.live-badge');
-                        if (liveBadge) {
-                            liveBadge.remove();
-                        }
-                    }
-                }
-            });
-            
-            // Update Empty Status messages for Available pool
-            const noAvailableMsg = availableContainer.querySelector('.no-players-msg');
-            const currentAvailableCards = availableContainer.querySelectorAll('.available-player-card');
-            if (currentAvailableCards.length === 0 && !noAvailableMsg) {
-                const div = document.createElement('div');
-                div.className = 'text-center text-gray-500 text-xs py-8 uppercase tracking-widest font-semibold no-players-msg';
-                div.innerText = 'No available players.';
-                availableContainer.appendChild(div);
-            } else if (currentAvailableCards.length > 0 && noAvailableMsg) {
-                noAvailableMsg.remove();
-            }
-
-            // 2. Rebuild completed pool container dynamically (supporting chips & search query)
+            // Rebuild completed pool container dynamically (supporting chips & search query)
             const searchInput = document.getElementById('completed-search-input');
             const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
