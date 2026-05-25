@@ -89,6 +89,66 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 </div>
             </div>
 
+            <!-- Completed Stats Box -->
+            <div id="completed-stats-box" class="hidden col-span-12 glass-panel rounded-2xl p-6 border border-gold-500/15 flex flex-col gap-6 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(218,165,32,0.03)_0%,transparent_70%)] pointer-events-none"></div>
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-white/5 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                            <i class="fa-solid fa-trophy text-lg animate-pulse-glow"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-black text-white uppercase tracking-tight">Auction Completed</h2>
+                            <p class="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Final Stats & Leaderboards</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded bg-gold-950/60 border border-gold-500/30 text-gold-400 text-[9px] uppercase tracking-wider font-extrabold flex items-center gap-1.5 shadow-sm shadow-gold-500/5">
+                        <i class="fa-solid fa-circle text-[6px] text-gold-500 animate-pulse"></i> Final Summary
+                    </span>
+                </div>
+
+                <!-- Stats Cards Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 relative z-10">
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-4 text-center shadow-inner hover:border-gold-500/20 transition duration-300">
+                        <span class="text-[9px] text-gray-500 uppercase tracking-wider block font-bold">Total Purse Spent</span>
+                        <span class="text-lg font-black text-gold-400 font-mono mt-1 block" id="stats-total-spent">₹0</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-4 text-center shadow-inner hover:border-gold-500/20 transition duration-300">
+                        <span class="text-[9px] text-gray-500 uppercase tracking-wider block font-bold">Avg. Player Bid</span>
+                        <span class="text-lg font-black text-white font-mono mt-1 block" id="stats-avg-price">₹0</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-4 text-center shadow-inner hover:border-gold-500/20 transition duration-300">
+                        <span class="text-[9px] text-gray-500 uppercase tracking-wider block font-bold">Players Sold</span>
+                        <span class="text-lg font-black text-emerald-400 font-mono mt-1 block" id="stats-sold-count">0</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-xl p-4 text-center shadow-inner hover:border-gold-500/20 transition duration-300">
+                        <span class="text-[9px] text-gray-500 uppercase tracking-wider block font-bold">Unsold Players</span>
+                        <span class="text-lg font-black text-red-400 font-mono mt-1 block" id="stats-unsold-count">0</span>
+                    </div>
+                </div>
+
+                <!-- Double Columns -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10 mt-2">
+                    <div class="md:col-span-7 space-y-3.5">
+                        <h3 class="text-[11px] font-extrabold text-gold-400 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-white/5">
+                            <i class="fa-solid fa-crown text-amber-500"></i> Top Valued Players
+                        </h3>
+                        <div class="space-y-2.5 max-h-[360px] overflow-y-auto pr-1" id="stats-top-players">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="md:col-span-5 space-y-3.5">
+                        <h3 class="text-[11px] font-extrabold text-gold-400 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-white/5">
+                            <i class="fa-solid fa-chart-line text-amber-500"></i> Franchise Pursetracker
+                        </h3>
+                        <div class="space-y-2.5 max-h-[360px] overflow-y-auto pr-1" id="stats-teams-spent">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Active Player Profile Bento (5 Cols) -->
             <div id="player-card" class="hidden col-span-12 md:col-span-5 glass-panel rounded-2xl overflow-hidden border border-gold-500/15 flex flex-col justify-between relative group">
                 <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-gold-500/10 to-transparent pointer-events-none"></div>
@@ -383,96 +443,112 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
                 const standbyBox = document.getElementById('standby-box');
                 const playerCard = document.getElementById('player-card');
                 const bidCard = document.getElementById('bid-card');
+                const completedStatsBox = document.getElementById('completed-stats-box');
 
-                if (data.current_player && data.status !== 'Idle') {
+                const totalVerified = data.all_players ? data.all_players.length : 0;
+                const hasAvailable = data.all_players ? data.all_players.some(p => p.auction_status === 'Available') : false;
+                const isAuctionComplete = totalVerified > 0 && data.status === 'Idle' && !data.current_player_id && !hasAvailable;
+
+                if (isAuctionComplete) {
                     standbyBox.classList.add('hidden');
-                    playerCard.classList.remove('hidden');
-                    bidCard.classList.remove('hidden');
-
-                    const newPlayerId = parseInt(data.current_player.id);
-
-                    // Sync Player details
-                    document.getElementById('player-name').innerText = data.current_player.name;
-                    document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
-                    document.getElementById('player-place').innerText = data.current_player.place;
-                    document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
-                    document.getElementById('player-image').src = "uploads/" + data.current_player.profile_image;
-                    
-                    const tag = document.getElementById('player-status-tag');
-                    tag.innerText = data.status === 'Paused' ? 'PAUSED' : 'BIDDING';
-                    tag.className = data.status === 'Paused' 
-                        ? 'absolute top-2 right-2 bg-yellow-500/80 px-2 py-0.5 rounded text-[8px] border border-yellow-400/30 uppercase tracking-wider text-black font-extrabold' 
-                        : 'absolute top-2 right-2 bg-red-600/80 px-2 py-0.5 rounded text-[8px] border border-red-500/30 uppercase tracking-wider text-white';
-
-                    // Sync Bidding Box details
-                    const bidText = document.getElementById('current-bid');
-                    bidText.innerText = "₹" + data.highest_bid;
-
-                    // Micro-animation flash if bid changes & play Sound!
-                    if (activePlayerId !== newPlayerId) {
-                        activePlayerId = newPlayerId;
-                        lastBidAmount = data.highest_bid;
-                    } else {
-                        if (lastBidAmount !== 0 && data.highest_bid > lastBidAmount) {
-                            bidText.classList.add('scale-105', 'text-yellow-300');
-                            setTimeout(() => {
-                                bidText.classList.remove('scale-105', 'text-yellow-300');
-                            }, 400);
-                            SMCLSoundEngine.playBid();
-                        }
-                        lastBidAmount = data.highest_bid;
-                    }
-
-                    const logoContainer = document.getElementById('leading-team-logo-container');
-                    const leadingTeamEl = document.getElementById('leading-team');
-                    if (data.leading_team_name) {
-                        leadingTeamEl.innerText = data.leading_team_name;
-                        leadingTeamEl.className = "text-base font-extrabold text-white cursor-pointer hover:text-gold-400 transition";
-                        leadingTeamEl.onclick = () => openTeamDetailsModal(data.leading_team_id);
-                        const logoSrc = data.leading_team_logo ? "uploads/" + data.leading_team_logo : "uploads/team_placeholder.jpg";
-                        logoContainer.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-contain">`;
-                    } else {
-                        leadingTeamEl.innerText = "No bids placed yet";
-                        leadingTeamEl.className = "text-base font-extrabold text-white";
-                        leadingTeamEl.onclick = null;
-                        logoContainer.innerHTML = `<i class="fa-solid fa-crown text-xl text-gold-400" id="leading-team-crown"></i>`;
-                    }
-                    // Sync Bids History Feed
-                    const historyList = document.getElementById('bid-history-list');
-                    historyList.innerHTML = '';
-
-                    if (data.bid_history && data.bid_history.length > 0) {
-                        data.bid_history.forEach(log => {
-                            const li = document.createElement('div');
-                            li.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs transition hover:bg-white/10";
-                            li.innerHTML = `
-                                <div class="flex items-center gap-2">
-                                    <span class="text-gold-400 font-bold">₹${log.bid_amount}</span>
-                                    <span class="text-gray-300 font-medium">${log.team_name}</span>
-                                </div>
-                            `;
-                            historyList.appendChild(li);
-                        });
-                    } else {
-                        historyList.innerHTML = `
-                            <div class="text-center text-[10px] text-gray-500 py-6 uppercase font-semibold tracking-wider">
-                                Waiting for opening bid...
-                            </div>
-                        `;
-                    }
-
-                } else {
-                    // Player has transitioned off the block!
-                    if (activePlayerId !== null) {
-                        const oldPlayerId = activePlayerId;
-                        activePlayerId = null;
-                        lastBidAmount = 0;
-                        checkPastPlayerStatus(oldPlayerId);
-                    }
-
-                    standbyBox.classList.remove('hidden');
                     playerCard.classList.add('hidden');
                     bidCard.classList.add('hidden');
+                    completedStatsBox.classList.remove('hidden');
+                    
+                    renderAuctionStats(data);
+                } else {
+                    completedStatsBox.classList.add('hidden');
+
+                    if (data.current_player && data.status !== 'Idle') {
+                        standbyBox.classList.add('hidden');
+                        playerCard.classList.remove('hidden');
+                        bidCard.classList.remove('hidden');
+
+                        const newPlayerId = parseInt(data.current_player.id);
+
+                        // Sync Player details
+                        document.getElementById('player-name').innerText = data.current_player.name;
+                        document.getElementById('player-role').innerText = data.current_player.role.toUpperCase();
+                        document.getElementById('player-place').innerText = data.current_player.place;
+                        document.getElementById('player-base-price').innerText = "₹" + data.current_player.base_price;
+                        document.getElementById('player-image').src = "uploads/" + data.current_player.profile_image;
+                        
+                        const tag = document.getElementById('player-status-tag');
+                        tag.innerText = data.status === 'Paused' ? 'PAUSED' : 'BIDDING';
+                        tag.className = data.status === 'Paused' 
+                            ? 'absolute top-2 right-2 bg-yellow-500/80 px-2 py-0.5 rounded text-[8px] border border-yellow-400/30 uppercase tracking-wider text-black font-extrabold' 
+                            : 'absolute top-2 right-2 bg-red-600/80 px-2 py-0.5 rounded text-[8px] border border-red-500/30 uppercase tracking-wider text-white';
+
+                        // Sync Bidding Box details
+                        const bidText = document.getElementById('current-bid');
+                        bidText.innerText = "₹" + data.highest_bid;
+
+                        // Micro-animation flash if bid changes & play Sound!
+                        if (activePlayerId !== newPlayerId) {
+                            activePlayerId = newPlayerId;
+                            lastBidAmount = data.highest_bid;
+                        } else {
+                            if (lastBidAmount !== 0 && data.highest_bid > lastBidAmount) {
+                                bidText.classList.add('scale-105', 'text-yellow-300');
+                                setTimeout(() => {
+                                    bidText.classList.remove('scale-105', 'text-yellow-300');
+                                }, 400);
+                                SMCLSoundEngine.playBid();
+                            }
+                            lastBidAmount = data.highest_bid;
+                        }
+
+                        const logoContainer = document.getElementById('leading-team-logo-container');
+                        const leadingTeamEl = document.getElementById('leading-team');
+                        if (data.leading_team_name) {
+                            leadingTeamEl.innerText = data.leading_team_name;
+                            leadingTeamEl.className = "text-base font-extrabold text-white cursor-pointer hover:text-gold-400 transition";
+                            leadingTeamEl.onclick = () => openTeamDetailsModal(data.leading_team_id);
+                            const logoSrc = data.leading_team_logo ? "uploads/" + data.leading_team_logo : "uploads/team_placeholder.jpg";
+                            logoContainer.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-contain">`;
+                        } else {
+                            leadingTeamEl.innerText = "No bids placed yet";
+                            leadingTeamEl.className = "text-base font-extrabold text-white";
+                            leadingTeamEl.onclick = null;
+                            logoContainer.innerHTML = `<i class="fa-solid fa-crown text-xl text-gold-400" id="leading-team-crown"></i>`;
+                        }
+                        // Sync Bids History Feed
+                        const historyList = document.getElementById('bid-history-list');
+                        historyList.innerHTML = '';
+
+                        if (data.bid_history && data.bid_history.length > 0) {
+                            data.bid_history.forEach(log => {
+                                const li = document.createElement('div');
+                                li.className = "flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/5 text-xs transition hover:bg-white/10";
+                                li.innerHTML = `
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gold-400 font-bold">₹${log.bid_amount}</span>
+                                        <span class="text-gray-300 font-medium">${log.team_name}</span>
+                                    </div>
+                                `;
+                                historyList.appendChild(li);
+                            });
+                        } else {
+                            historyList.innerHTML = `
+                                <div class="text-center text-[10px] text-gray-500 py-6 uppercase font-semibold tracking-wider">
+                                    Waiting for opening bid...
+                                </div>
+                            `;
+                        }
+
+                    } else {
+                        // Player has transitioned off the block!
+                        if (activePlayerId !== null) {
+                            const oldPlayerId = activePlayerId;
+                            activePlayerId = null;
+                            lastBidAmount = 0;
+                            checkPastPlayerStatus(oldPlayerId);
+                        }
+
+                        standbyBox.classList.remove('hidden');
+                        playerCard.classList.add('hidden');
+                        bidCard.classList.add('hidden');
+                    }
                 }
 
                 // 3. Sync Leaderboards Standings
@@ -674,6 +750,156 @@ $registrationEnabled = $regStatus ? (bool)$regStatus['registration_enabled'] : t
             } catch (e) {
                 console.error("Failed to lookup past player status:", e);
             }
+        }
+
+        // Render final auction statistics
+        function renderAuctionStats(data) {
+            const allPlayers = data.all_players || [];
+            const teams = data.teams || [];
+
+            // 1. Calculations
+            const soldPlayers = allPlayers.filter(p => p.auction_status === 'Sold');
+            const unsoldPlayers = allPlayers.filter(p => p.auction_status === 'Unsold');
+
+            const totalSpent = soldPlayers.reduce((sum, p) => sum + (parseInt(p.sold_price) || 0), 0);
+            const avgPrice = soldPlayers.length > 0 ? Math.round(totalSpent / soldPlayers.length) : 0;
+            const soldCount = soldPlayers.length;
+            const unsoldCount = unsoldPlayers.length;
+
+            // Update stats cards text
+            document.getElementById('stats-total-spent').innerText = "₹" + totalSpent.toLocaleString('en-IN');
+            document.getElementById('stats-avg-price').innerText = "₹" + avgPrice.toLocaleString('en-IN');
+            document.getElementById('stats-sold-count').innerText = soldCount;
+            document.getElementById('stats-unsold-count').innerText = unsoldCount;
+
+            // 2. Render Top Valued Players (Top 5)
+            const topPlayersEl = document.getElementById('stats-top-players');
+            topPlayersEl.innerHTML = '';
+
+            const topSold = [...soldPlayers]
+                .sort((a, b) => (parseInt(b.sold_price) || 0) - (parseInt(a.sold_price) || 0))
+                .slice(0, 5);
+
+            if (topSold.length === 0) {
+                topPlayersEl.innerHTML = `
+                    <div class="text-center text-[10px] text-gray-500 py-8 uppercase font-semibold">
+                        No players sold yet.
+                    </div>
+                `;
+            } else {
+                topSold.forEach((p, idx) => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 text-xs hover:bg-white/10 transition cursor-pointer relative overflow-hidden group";
+                    row.onclick = () => openPlayerDetailsModal(p.id);
+
+                    // Rank indicator badge
+                    let rankBadge = '';
+                    if (idx === 0) {
+                        rankBadge = '<span class="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center font-extrabold text-[10px] flex-shrink-0"><i class="fa-solid fa-crown"></i></span>';
+                    } else if (idx === 1) {
+                        rankBadge = '<span class="w-6 h-6 rounded-lg bg-slate-300/20 border border-slate-300/30 text-slate-300 flex items-center justify-center font-extrabold text-[10px] flex-shrink-0">2</span>';
+                    } else if (idx === 2) {
+                        rankBadge = '<span class="w-6 h-6 rounded-lg bg-amber-700/20 border border-amber-700/30 text-amber-600 flex items-center justify-center font-extrabold text-[10px] flex-shrink-0">3</span>';
+                    } else {
+                        rankBadge = `<span class="w-6 h-6 rounded-lg bg-white/5 border border-white/10 text-gray-400 flex items-center justify-center font-extrabold text-[10px] flex-shrink-0">${idx + 1}</span>`;
+                    }
+
+                    const profileImg = p.profile_image ? p.profile_image : 'player_placeholder.jpg';
+                    const teamLogo = p.team_logo ? p.team_logo : 'team_placeholder.jpg';
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0">
+                            ${rankBadge}
+                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-black/40 flex-shrink-0 cursor-zoom-in" onclick="event.stopPropagation(); openImageLightbox('uploads/${profileImg}', '${p.name.replace(/'/g, "\\\'")}');">
+                                <img src="uploads/${profileImg}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='uploads/player_placeholder.jpg';">
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-white font-extrabold block truncate group-hover:text-gold-400 transition">${p.name}</span>
+                                <span class="text-[9px] text-gray-500 uppercase tracking-widest block truncate mt-0.5">${p.role} &bull; ${p.place}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <div class="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-lg border border-white/5 max-w-[120px] truncate" onclick="event.stopPropagation(); openTeamDetailsModal(${p.team_id});">
+                                <img src="uploads/${teamLogo}" class="w-4 h-4 rounded object-contain bg-black/40 p-0.5 border border-white/10">
+                                <span class="text-[9px] font-extrabold text-white truncate max-w-[80px]">${p.team_name}</span>
+                            </div>
+                            <span class="text-gold-400 font-black font-mono text-sm min-w-[65px] text-right">₹${Number(p.sold_price).toLocaleString('en-IN')}</span>
+                        </div>
+                    `;
+                    topPlayersEl.appendChild(row);
+                });
+            }
+
+            // 3. Render Franchise Leaderboard
+            const teamsSpentEl = document.getElementById('stats-teams-spent');
+            teamsSpentEl.innerHTML = '';
+
+            const teamSpendData = teams.map(t => {
+                const spent = parseInt(t.total_purse) - parseInt(t.remaining_purse);
+                
+                // Find most expensive buy
+                const teamSoldPlayers = soldPlayers.filter(p => p.team_id == t.id);
+                let topBuy = null;
+                if (teamSoldPlayers.length > 0) {
+                    topBuy = [...teamSoldPlayers].sort((a, b) => (parseInt(b.sold_price) || 0) - (parseInt(a.sold_price) || 0))[0];
+                }
+
+                return {
+                    ...t,
+                    spent,
+                    topBuy
+                };
+            }).sort((a, b) => b.spent - a.spent);
+
+            teamSpendData.forEach(t => {
+                const row = document.createElement('div');
+                row.className = "p-3 rounded-xl bg-white/5 border border-white/5 text-xs hover:bg-white/10 transition cursor-pointer relative group flex flex-col gap-2";
+                row.onclick = () => openTeamDetailsModal(t.id);
+
+                const logoSrc = t.logo ? "uploads/" + t.logo : "uploads/team_placeholder.jpg";
+                const spentPct = Math.round((t.spent / t.total_purse) * 100);
+
+                let topBuyHtml = '<span class="text-[9px] text-gray-500 font-semibold uppercase">Top Buy: None</span>';
+                if (t.topBuy) {
+                    topBuyHtml = `
+                        <div class="flex items-center justify-between text-[9px] border-t border-white/5 pt-1.5 mt-0.5">
+                            <span class="text-gray-500 uppercase font-semibold">Top Buy</span>
+                            <span class="text-gray-300 font-bold max-w-[120px] truncate">${t.topBuy.name}</span>
+                            <span class="text-gold-400 font-bold font-mono">₹${Number(t.topBuy.sold_price).toLocaleString('en-IN')}</span>
+                        </div>
+                    `;
+                }
+
+                row.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img src="${logoSrc}" class="w-8 h-8 rounded object-contain bg-black/40 p-0.5 border border-gold-500/20 shadow-md">
+                            <div class="min-w-0">
+                                <span class="text-white font-extrabold block truncate group-hover:text-gold-400 transition">${t.team_name}</span>
+                                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold">Purse Spent: ${spentPct}%</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-gold-400 font-black font-mono block text-sm">₹${Number(t.spent).toLocaleString('en-IN')}</span>
+                            <span class="text-[9px] text-gray-500 font-semibold uppercase tracking-wider block mt-0.5">Purse Left: ₹${Number(t.remaining_purse).toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+
+                    <!-- Squad Limit Progress Bar -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center text-[9px] text-gray-400">
+                            <span>Squad size</span>
+                            <span class="font-bold">${t.current_squad_size} / ${t.max_squad_size}</span>
+                        </div>
+                        <div class="w-full bg-white/5 rounded-full h-1 border border-white/5 overflow-hidden">
+                            <div class="bg-gold-500 h-full rounded-full transition-all duration-300" style="width: ${(t.current_squad_size / t.max_squad_size) * 100}%"></div>
+                        </div>
+                    </div>
+
+                    ${topBuyHtml}
+                `;
+                teamsSpentEl.appendChild(row);
+            });
         }
 
         // PWA Install Prompt Script
